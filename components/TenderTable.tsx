@@ -1,0 +1,168 @@
+'use client'
+import Link from 'next/link'
+import { fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS } from '@/lib/api'
+import type { TenderListItem } from '@/lib/types'
+import RiskBadge from './RiskBadge'
+import { ChevronUp, ChevronDown } from 'lucide-react'
+
+interface Props {
+  items:        TenderListItem[]
+  total:        number
+  page:         number
+  perPage:      number
+  pages:        number
+  sortBy?:      string
+  sortOrder?:   'asc' | 'desc'
+  onPageChange:  (p: number) => void
+  onSort:        (col: string) => void
+  loading?:      boolean
+}
+
+const COLS = [
+  { key: 'title',         label: 'Тендер',       sortable: false,  width: 'min-w-[260px]' },
+  { key: 'value_amount',  label: 'Сума',          sortable: true,   width: 'w-36' },
+  { key: 'procedure',     label: 'Процедура',     sortable: false,  width: 'w-36' },
+  { key: 'bids_count',    label: 'Учасн.',        sortable: false,  width: 'w-20 text-center' },
+  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-32' },
+  { key: 'date_created',  label: 'Дата',          sortable: true,   width: 'w-28' },
+]
+
+function SkeletonRow() {
+  return (
+    <tr className="border-t border-border animate-pulse">
+      {COLS.map(c => (
+        <td key={c.key} className={`px-4 py-3 ${c.width}`}>
+          <div className="h-4 rounded bg-border" />
+        </td>
+      ))}
+    </tr>
+  )
+}
+
+export default function TenderTable({
+  items, total, page, perPage, pages,
+  sortBy, sortOrder, onPageChange, onSort, loading,
+}: Props) {
+  const SortIcon = ({ col }: { col: string }) => {
+    if (col !== sortBy) return <ChevronUp size={14} className="opacity-20" />
+    return sortOrder === 'asc'
+      ? <ChevronUp size={14} className="text-accent" />
+      : <ChevronDown size={14} className="text-accent" />
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-white">
+          <thead>
+            <tr className="border-b border-border bg-bg/40">
+              {COLS.map(col => (
+                <th
+                  key={col.key}
+                  className={`px-4 py-3 text-left font-medium text-muted ${col.width}
+                    ${col.sortable ? 'cursor-pointer hover:text-white select-none' : ''}`}
+                  onClick={() => col.sortable && onSort(col.key)}
+                >
+                  <span className="flex items-center gap-1">
+                    {col.label}
+                    {col.sortable && <SortIcon col={col.key} />}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading
+              ? Array.from({ length: perPage }).map((_, i) => <SkeletonRow key={i} />)
+              : items.map(t => (
+                <tr
+                  key={t.id}
+                  className="border-t border-border hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  <td className="px-4 py-3">
+                    <Link href={`/tenders/${t.tender_id}`} className="block">
+                      <p className="line-clamp-2 font-medium hover:text-accent transition-colors">
+                        {t.title}
+                      </p>
+                      {t.procuring_entity_name && (
+                        <p className="mt-0.5 text-xs text-muted truncate">
+                          {t.procuring_entity_name}
+                          {t.procuring_entity_region && ` · ${t.procuring_entity_region}`}
+                        </p>
+                      )}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-sm">
+                    {fmtAmount(t.value_amount, t.value_currency)}
+                  </td>
+                  <td className="px-4 py-3 text-muted text-xs">
+                    {PROCEDURE_LABELS[t.procedure_type ?? ''] ?? t.procedure_type ?? '—'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={t.bids_count === 1 ? 'text-risk-high font-bold' : ''}>
+                      {t.bids_count}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <RiskBadge level={t.risk_level} score={t.risk_score} size="sm" />
+                  </td>
+                  <td className="px-4 py-3 text-muted text-xs">
+                    {fmtDate(t.date_created)}
+                  </td>
+                </tr>
+              ))}
+
+            {!loading && items.length === 0 && (
+              <tr>
+                <td colSpan={COLS.length} className="px-4 py-12 text-center text-muted">
+                  Нічого не знайдено
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Пагінація */}
+      {pages > 1 && (
+        <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm">
+          <span className="text-muted">
+            {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)} з {total}
+          </span>
+          <div className="flex gap-1">
+            <button
+              onClick={() => onPageChange(page - 1)}
+              disabled={page <= 1}
+              className="rounded px-3 py-1.5 text-muted hover:bg-white/10 disabled:opacity-30"
+            >
+              ←
+            </button>
+            {Array.from({ length: Math.min(pages, 7) }, (_, i) => {
+              const p = page <= 4 ? i + 1
+                : page >= pages - 3 ? pages - 6 + i
+                : page - 3 + i
+              return p > 0 && p <= pages ? (
+                <button
+                  key={p}
+                  onClick={() => onPageChange(p)}
+                  className={`rounded px-3 py-1.5 ${p === page
+                    ? 'bg-accent text-white'
+                    : 'text-muted hover:bg-white/10'}`}
+                >
+                  {p}
+                </button>
+              ) : null
+            })}
+            <button
+              onClick={() => onPageChange(page + 1)}
+              disabled={page >= pages}
+              className="rounded px-3 py-1.5 text-muted hover:bg-white/10 disabled:opacity-30"
+            >
+              →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
