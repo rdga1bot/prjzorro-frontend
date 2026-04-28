@@ -53,13 +53,21 @@ export default function TenderTable({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[860px] text-sm text-white">
+        <table className="w-full min-w-[860px] table-fixed text-sm text-white">
+          <colgroup>
+            <col />
+            <col className="w-36" />
+            <col className="w-40" />
+            <col className="w-20" />
+            <col className="w-28" />
+            <col className="w-28" />
+          </colgroup>
           <thead>
             <tr className="border-b border-border bg-bg/40">
               {COLS.map(col => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-left font-medium text-muted ${col.width}
+                  className={`px-4 py-3 text-left font-medium text-muted
                     ${col.sortable ? 'cursor-pointer hover:text-white select-none' : ''}`}
                   onClick={() => col.sortable && onSort(col.key)}
                 >
@@ -79,7 +87,7 @@ export default function TenderTable({
                   key={t.id}
                   className="border-t border-border hover:bg-white/5 transition-colors cursor-pointer"
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 min-w-0">
                     <Link href={`/tenders/${t.tender_id}`} className="block">
                       <p className="line-clamp-2 font-medium hover:text-accent transition-colors">
                         {t.title}
