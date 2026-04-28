@@ -19,12 +19,12 @@ interface Props {
 }
 
 const COLS = [
-  { key: 'title',         label: 'Тендер',       sortable: false,  width: 'min-w-[260px]' },
-  { key: 'value_amount',  label: 'Сума',          sortable: true,   width: 'w-36' },
-  { key: 'procedure',     label: 'Процедура',     sortable: false,  width: 'w-36' },
-  { key: 'bids_count',    label: 'Учасн.',        sortable: false,  width: 'w-20 text-center' },
-  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-32' },
-  { key: 'date_created',  label: 'Дата',          sortable: true,   width: 'w-28' },
+  { key: 'title',         label: 'Тендер',       sortable: false,  width: '' },
+  { key: 'value_amount',  label: 'Сума',          sortable: true,   width: 'w-36 shrink-0' },
+  { key: 'procedure',     label: 'Процедура',     sortable: false,  width: 'w-40 shrink-0' },
+  { key: 'bids_count',    label: 'Учасн.',        sortable: false,  width: 'w-20 shrink-0 text-center' },
+  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-28 shrink-0' },
+  { key: 'date_created',  label: 'Дата',          sortable: true,   width: 'w-28 shrink-0' },
 ]
 
 function SkeletonRow() {
@@ -53,7 +53,7 @@ export default function TenderTable({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-white">
+        <table className="w-full min-w-[860px] text-sm text-white">
           <thead>
             <tr className="border-b border-border bg-bg/40">
               {COLS.map(col => (
@@ -96,7 +96,9 @@ export default function TenderTable({
                     {fmtAmount(t.value_amount, t.value_currency)}
                   </td>
                   <td className="px-4 py-3 text-muted text-xs">
-                    {PROCEDURE_LABELS[t.procedure_type ?? ''] ?? t.procedure_type ?? '—'}
+                    <span className="line-clamp-2">
+                      {PROCEDURE_LABELS[t.procedure_type ?? ''] ?? t.procedure_type ?? '—'}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className={t.bids_count === 1 ? 'text-risk-high font-bold' : ''}>
