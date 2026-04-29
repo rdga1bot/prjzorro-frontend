@@ -3,6 +3,21 @@ import type {
   CompanyProfile, NetworkData, DashboardStats,
 } from './types'
 
+export interface AlertCreate {
+  email: string; name?: string
+  buyer_edrpou?: string; supplier_edrpou?: string
+  cpv_code?: string; region?: string
+  amount_min?: number; risk_level?: string
+}
+
+export interface AlertOut {
+  id: string; email: string; name?: string
+  buyer_edrpou?: string; supplier_edrpou?: string
+  cpv_code?: string; region?: string
+  amount_min?: number; risk_level?: string
+  is_active: boolean; created_at: string
+}
+
 const BASE = typeof window === 'undefined'
   ? (process.env.API_URL ?? 'http://api:8000')
   : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000')
@@ -91,6 +106,15 @@ export const api = {
       apiFetch<Array<{ id: string; name?: string; title?: string; type: string }>>(
         `/api/v1/search/autocomplete?q=${encodeURIComponent(q)}`
       ),
+  },
+
+  alerts: {
+    list: (email: string) =>
+      apiFetch<AlertOut[]>(`/api/v1/alerts/${buildQuery({ email })}`),
+    create: (data: AlertCreate) =>
+      apiFetch<AlertOut>('/api/v1/alerts/', { method: 'POST', body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      apiFetch<void>(`/api/v1/alerts/${id}`, { method: 'DELETE' }),
   },
 }
 

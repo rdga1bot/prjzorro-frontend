@@ -36,7 +36,7 @@ export default function SearchBar({ placeholder = 'Пошук тендерів, 
   const submit = (q: string) => {
     if (!q.trim()) return
     setOpen(false)
-    router.push(`/tenders?q=${encodeURIComponent(q.trim())}`)
+    router.push(`/search?q=${encodeURIComponent(q.trim())}`)
   }
 
   const pickSuggestion = (s: typeof suggestions[0]) => {
