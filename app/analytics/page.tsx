@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import SpendingTrend from '@/components/charts/SpendingTrend'
+import TrendSection from '@/components/charts/TrendSection'
 import TendersByRegion from '@/components/charts/TendersByRegion'
 import RiskDistribution from '@/components/charts/RiskDistribution'
 import { fmtAmount } from '@/lib/api'
@@ -26,7 +26,7 @@ export default async function AnalyticsPage() {
       {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <SpendingTrend data={stats.trend_30d} />
+          <TrendSection />
         </div>
         <RiskDistribution data={stats.risk_distribution} />
       </div>

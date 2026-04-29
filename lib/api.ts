@@ -95,6 +95,11 @@ export const api = {
 
   stats: {
     dashboard: () => apiFetch<DashboardStats>('/api/v1/stats/dashboard'),
+    trend: (days = 30, region?: string, procedureType?: string) =>
+      apiFetch<{
+        source: 'clickhouse' | 'postgres'
+        rows: Array<{ date: string; count: number; total_amount: number; avg_bids: number; high_risk_count: number }>
+      }>(`/api/v1/stats/trend${buildQuery({ days, region, procedure_type: procedureType })}`),
   },
 
   search: {
