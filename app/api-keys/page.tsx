@@ -4,12 +4,16 @@ import useSWR from 'swr'
 import { Key, Plus, Trash2, Copy, Check, Eye, EyeOff } from 'lucide-react'
 import { api } from '@/lib/api'
 
-interface KeyForm { name: string; owner_email: string; rate_limit: string }
-const EMPTY: KeyForm = { name: '', owner_email: '', rate_limit: '1000' }
+interface KeyForm {
+  name: string; owner_email: string; rate_limit: string
+  org_name: string; org_logo_url: string
+}
+const EMPTY: KeyForm = { name: '', owner_email: '', rate_limit: '1000', org_name: '', org_logo_url: '' }
 
 interface ApiKeyOut {
   id: string; name: string; owner_email: string
   rate_limit: number; is_active: boolean
+  org_name: string | null; org_logo_url: string | null
   created_at: string; last_used_at: string | null
 }
 
@@ -39,9 +43,11 @@ export default function ApiKeysPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:        form.name,
-          owner_email: form.owner_email,
-          rate_limit:  Number(form.rate_limit) || 1000,
+          name:         form.name,
+          owner_email:  form.owner_email,
+          rate_limit:   Number(form.rate_limit) || 1000,
+          org_name:     form.org_name     || undefined,
+          org_logo_url: form.org_logo_url || undefined,
         }),
       })
       if (!res.ok) throw new Error()
@@ -109,6 +115,22 @@ export default function ApiKeysPage() {
           <Field label="Ліміт запитів / день" type="number" value={form.rate_limit}
             onChange={set('rate_limit')} placeholder="1000" />
 
+          {/* White-label (опціонально) */}
+          <details className="group">
+            <summary className="text-xs text-muted cursor-pointer hover:text-white transition-colors select-none">
+              White-label брендинг (опціонально)
+            </summary>
+            <div className="mt-3 grid grid-cols-2 gap-4">
+              <Field label="Назва організації" value={form.org_name}
+                onChange={set('org_name')} placeholder="НАБУ / Bihus.Info" />
+              <Field label="URL логотипу" value={form.org_logo_url}
+                onChange={set('org_logo_url')} placeholder="https://org.ua/logo.png" />
+            </div>
+            <p className="mt-2 text-xs text-muted">
+              Доступно через <code className="text-accent">GET /api/v1/auth/org</code> для кастомізації embed-версії
+            </p>
+          </details>
+
           {error && <p className="text-sm text-red-400">{error}</p>}
 
           <button
@@ -143,6 +165,7 @@ export default function ApiKeysPage() {
                 <div className="space-y-1 min-w-0">
                   <p className="text-sm text-white truncate">{k.name}</p>
                   <p className="text-xs text-muted">
+                    {k.org_name && <span className="text-accent/80">{k.org_name} · </span>}
                     {k.rate_limit.toLocaleString('uk-UA')} запитів/день
                     {k.last_used_at && ` · Останній: ${new Date(k.last_used_at).toLocaleDateString('uk-UA')}`}
                   </p>
