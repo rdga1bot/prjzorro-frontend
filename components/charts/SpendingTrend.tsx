@@ -28,9 +28,9 @@ export default function SpendingTrend({ data }: Props) {
     legend: {
       data: ['Тендерів', 'Сума (млн ₴)'],
       textStyle: { color: '#64748b' },
-      right: 0,
+      right: 10,
     },
-    grid: { left: 10, right: 10, bottom: 0, top: 30, containLabel: true },
+    grid: { left: 10, right: 70, bottom: 0, top: 30, containLabel: true },
     xAxis: {
       type: 'category',
       data: data.map(d => d.date.slice(5)),   // MM-DD
@@ -40,15 +40,11 @@ export default function SpendingTrend({ data }: Props) {
     yAxis: [
       {
         type: 'value',
-        name: 'Тендерів',
-        nameTextStyle: { color: '#64748b', fontSize: 11 },
         axisLabel: { color: '#64748b', fontSize: 11 },
         splitLine: { lineStyle: { color: '#334155', type: 'dashed' } },
       },
       {
         type: 'value',
-        name: 'Сума',
-        nameTextStyle: { color: '#64748b', fontSize: 11 },
         axisLabel: { color: '#64748b', fontSize: 11, formatter: (v: number) => `${(v / 1e6).toFixed(0)}M` },
         splitLine: { show: false },
       },

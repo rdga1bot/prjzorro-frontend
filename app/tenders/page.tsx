@@ -1,11 +1,11 @@
 'use client'
 import { useState, useCallback } from 'react'
 import useSWR from 'swr'
-import { api, fmtAmount } from '@/lib/api'
+import { api, exportUrl } from '@/lib/api'
 import type { TenderFilters } from '@/lib/api'
 import TenderTable from '@/components/TenderTable'
 import SearchBar from '@/components/SearchBar'
-import { Filter, X } from 'lucide-react'
+import { Filter, X, Download } from 'lucide-react'
 
 const RISK_OPTIONS = ['low', 'medium', 'high', 'critical']
 const STATUS_OPTIONS = ['active', 'complete', 'cancelled', 'unsuccessful']
@@ -61,7 +61,25 @@ export default function TendersPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">Тендери</h1>
-        {data && <span className="text-sm text-muted">{data.total.toLocaleString('uk-UA')} знайдено</span>}
+        <div className="flex items-center gap-3">
+          {data && <span className="text-sm text-muted">{data.total.toLocaleString('uk-UA')} знайдено</span>}
+          <div className="flex gap-1">
+            <a
+              href={exportUrl('csv', filters)}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted hover:text-white hover:border-accent transition-colors"
+              title="Завантажити CSV (до 50 000 рядків)"
+            >
+              <Download size={13} /> CSV
+            </a>
+            <a
+              href={exportUrl('xlsx', filters)}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted hover:text-white hover:border-accent transition-colors"
+              title="Завантажити XLSX (до 50 000 рядків)"
+            >
+              <Download size={13} /> XLSX
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Search + Filter toggle */}

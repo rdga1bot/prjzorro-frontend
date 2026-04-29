@@ -72,6 +72,8 @@ export interface CompanyProfile {
   registration_date?:        string
   status?:                   string
   director_name?:            string
+  founders?:                 Array<{ name: string; edrpou?: string; share?: number }>
+  beneficiaries?:            Array<{ name: string; edrpou?: string; share?: number }>
   as_buyer_tenders_count:    number
   as_buyer_total_amount:     number
   as_supplier_tenders_count: number

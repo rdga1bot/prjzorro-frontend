@@ -106,6 +106,26 @@ export default function CompanyPage({ params }: Props) {
           </div>
         )}
 
+        {/* Засновники */}
+        {company.founders && company.founders.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs text-muted mb-1.5">Засновники</p>
+            <div className="flex flex-wrap gap-2">
+              {company.founders.map((f, i) => (
+                <span key={i} className="inline-flex items-center gap-1 rounded-md bg-white/5 px-2.5 py-1 text-xs text-white">
+                  {f.edrpou
+                    ? <span
+                        className="cursor-pointer hover:text-accent"
+                        onClick={() => router.push(`/companies/${f.edrpou}`)}
+                      >{f.name}</span>
+                    : f.name}
+                  {f.share != null && <span className="text-muted ml-1">{f.share}%</span>}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatBox

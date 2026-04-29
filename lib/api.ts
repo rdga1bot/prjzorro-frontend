@@ -46,6 +46,13 @@ export function buildQuery(params: Record<string, unknown>): string {
   return s ? `?${s}` : ''
 }
 
+export function exportUrl(fmt: 'csv' | 'xlsx', filters: TenderFilters = {}): string {
+  const base = typeof window !== 'undefined'
+    ? (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000')
+    : 'http://localhost:8000'
+  return `${base}/api/v1/export/tenders${buildQuery({ format: fmt, ...filters })}`
+}
+
 export const api = {
   tenders: {
     list: (f: TenderFilters = {}) =>
