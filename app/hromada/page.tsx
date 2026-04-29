@@ -45,7 +45,7 @@ export default function HromadaPage() {
 
   const { data: regions } = useSWR<RegionSummary[]>(
     'hromada-list',
-    () => fetch('/api/v1/hromada/').then(r => r.json()),
+    () => fetch('/api/v1/hromada').then(r => r.json()),
   )
 
   const { data: detail } = useSWR<RegionDetail>(
