@@ -12,11 +12,13 @@ const RISK_LABELS: Record<string, string> = {
 interface AlertForm {
   email: string; name: string; buyer_edrpou: string; supplier_edrpou: string
   cpv_code: string; region: string; amount_min: string; risk_level: string
+  telegram_chat_id: string; notify_email: boolean; notify_telegram: boolean
 }
 
 const EMPTY: AlertForm = {
   email: '', name: '', buyer_edrpou: '', supplier_edrpou: '',
   cpv_code: '', region: '', amount_min: '', risk_level: '',
+  telegram_chat_id: '', notify_email: true, notify_telegram: false,
 }
 
 export default function AlertsPage() {
@@ -40,14 +42,17 @@ export default function AlertsPage() {
     setSubmitting(true); setError(''); setSuccess(false)
     try {
       await api.alerts.create({
-        email:           form.email,
-        name:            form.name || undefined,
-        buyer_edrpou:    form.buyer_edrpou || undefined,
-        supplier_edrpou: form.supplier_edrpou || undefined,
-        cpv_code:        form.cpv_code || undefined,
-        region:          form.region || undefined,
-        amount_min:      form.amount_min ? Number(form.amount_min) : undefined,
-        risk_level:      form.risk_level || undefined,
+        email:            form.email,
+        name:             form.name || undefined,
+        buyer_edrpou:     form.buyer_edrpou || undefined,
+        supplier_edrpou:  form.supplier_edrpou || undefined,
+        cpv_code:         form.cpv_code || undefined,
+        region:           form.region || undefined,
+        amount_min:       form.amount_min ? Number(form.amount_min) : undefined,
+        risk_level:       form.risk_level || undefined,
+        telegram_chat_id: form.telegram_chat_id || undefined,
+        notify_email:     form.notify_email,
+        notify_telegram:  form.notify_telegram,
       })
       setSuccess(true)
       setForm(EMPTY)
@@ -99,6 +104,31 @@ export default function AlertsPage() {
                 {RISK_OPTIONS.map(o => <option key={o} value={o}>{RISK_LABELS[o]}</option>)}
               </select>
             </div>
+          </div>
+
+          {/* Канали сповіщень */}
+          <div className="space-y-2 pt-1">
+            <p className="text-xs text-muted">Канали сповіщень</p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.notify_email}
+                onChange={e => setForm(f => ({ ...f, notify_email: e.target.checked }))}
+                className="accent-accent" />
+              <span className="text-sm text-white">Email</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.notify_telegram}
+                onChange={e => setForm(f => ({ ...f, notify_telegram: e.target.checked }))}
+                className="accent-accent" />
+              <span className="text-sm text-white">Telegram</span>
+            </label>
+            {form.notify_telegram && (
+              <Field
+                label="Telegram Chat ID (отримати у @userinfobot)"
+                value={form.telegram_chat_id}
+                onChange={set('telegram_chat_id')}
+                placeholder="-1001234567890"
+              />
+            )}
           </div>
 
           {error   && <p className="text-sm text-red-400">{error}</p>}

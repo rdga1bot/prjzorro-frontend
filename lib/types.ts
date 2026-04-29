@@ -102,8 +102,9 @@ export interface NetworkEdge {
 }
 
 export interface NetworkData {
-  nodes: NetworkNode[]
-  edges: NetworkEdge[]
+  nodes:       NetworkNode[]
+  edges:       NetworkEdge[]
+  total_nodes: number
 }
 
 export interface DashboardStats {

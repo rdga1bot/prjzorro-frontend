@@ -8,6 +8,8 @@ export interface AlertCreate {
   buyer_edrpou?: string; supplier_edrpou?: string
   cpv_code?: string; region?: string
   amount_min?: number; risk_level?: string
+  telegram_chat_id?: string
+  notify_email?: boolean; notify_telegram?: boolean
 }
 
 export interface AlertOut {
@@ -15,6 +17,8 @@ export interface AlertOut {
   buyer_edrpou?: string; supplier_edrpou?: string
   cpv_code?: string; region?: string
   amount_min?: number; risk_level?: string
+  telegram_chat_id?: string
+  notify_email: boolean; notify_telegram: boolean
   is_active: boolean; created_at: string
 }
 
