@@ -46,6 +46,7 @@ export interface TenderFilters {
   cpv_code?:       string
   buyer_edrpou?:   string
   risk_level?:     string
+  flag_type?:      string
   amount_min?:     number
   amount_max?:     number
   date_from?:      string
@@ -54,6 +55,18 @@ export interface TenderFilters {
   per_page?:       number
   sort_by?:        string
   sort_order?:     'asc' | 'desc'
+}
+
+export const FLAG_LABELS: Record<string, string> = {
+  single_bidder:              'Єдиний учасник',
+  short_tender_period:        'Короткі строки',
+  no_price_competition:       'Без цінової конкуренції',
+  below_threshold_high_amount:'Велика сума нижче порогу',
+  mass_disqualification:      'Масова дискваліфікація',
+  repeated_winner:            'Повторний переможець',
+  price_anomaly:              'Цінова аномалія',
+  sanctioned_entity:          'Санкційний суб\'єкт',
+  contract_splitting:         'Дроблення закупівель',
 }
 
 export function buildQuery(params: Record<string, unknown>): string {

@@ -1,14 +1,15 @@
 'use client'
 import { useState, useCallback } from 'react'
 import useSWR from 'swr'
-import { api, exportUrl } from '@/lib/api'
+import { api, exportUrl, FLAG_LABELS } from '@/lib/api'
 import type { TenderFilters } from '@/lib/api'
 import TenderTable from '@/components/TenderTable'
 import SearchBar from '@/components/SearchBar'
 import { Filter, X, Download } from 'lucide-react'
 
-const RISK_OPTIONS = ['low', 'medium', 'high', 'critical']
+const RISK_OPTIONS   = ['low', 'medium', 'high', 'critical']
 const STATUS_OPTIONS = ['active', 'complete', 'cancelled', 'unsuccessful']
+const FLAG_OPTIONS   = Object.keys(FLAG_LABELS)
 
 function Select({ label, value, options, onChange }: {
   label: string; value: string; options: string[]; onChange: (v: string) => void
@@ -53,8 +54,8 @@ export default function TendersPage() {
   }
 
   const activeFilterCount = [
-    filters.status, filters.risk_level, filters.region,
-    filters.amount_min, filters.amount_max, filters.cpv_code,
+    filters.status, filters.risk_level, filters.flag_type,
+    filters.region, filters.amount_min, filters.amount_max, filters.cpv_code,
   ].filter(Boolean).length
 
   return (
@@ -103,8 +104,22 @@ export default function TendersPage() {
       {/* Filters panel */}
       {showFilters && (
         <div className="rounded-xl border border-border bg-card p-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Select label="Статус"     value={filters.status ?? ''}     options={STATUS_OPTIONS} onChange={v => set({ status: v || undefined })} />
-          <Select label="Рівень ризику" value={filters.risk_level ?? ''} options={RISK_OPTIONS}  onChange={v => set({ risk_level: v || undefined })} />
+          <Select label="Статус"        value={filters.status ?? ''}     options={STATUS_OPTIONS} onChange={v => set({ status: v || undefined })} />
+          <Select label="Рівень ризику" value={filters.risk_level ?? ''} options={RISK_OPTIONS}   onChange={v => set({ risk_level: v || undefined })} />
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted">Тип ризику</label>
+            <select
+              value={filters.flag_type ?? ''}
+              onChange={e => set({ flag_type: e.target.value || undefined })}
+              className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-white focus:border-accent outline-none"
+            >
+              <option value="">Всі</option>
+              {FLAG_OPTIONS.map(f => (
+                <option key={f} value={f}>{FLAG_LABELS[f]}</option>
+              ))}
+            </select>
+          </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted">Регіон</label>
