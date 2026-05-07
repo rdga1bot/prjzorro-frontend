@@ -21,9 +21,9 @@ interface Props {
 const COLS = [
   { key: 'title',         label: 'Тендер',       sortable: false,  width: '' },
   { key: 'value_amount',  label: 'Сума',          sortable: true,   width: 'w-36 shrink-0' },
-  { key: 'procedure',     label: 'Процедура',     sortable: false,  width: 'w-40 shrink-0' },
-  { key: 'bids_count',    label: 'Учасн.',        sortable: false,  width: 'w-20 shrink-0 text-center' },
-  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-44 shrink-0' },
+  { key: 'procedure',     label: 'Процедура',     sortable: false,  width: 'w-48 shrink-0' },
+  { key: 'bids_count',    label: 'Учасн.',        sortable: false,  width: 'w-20 shrink-0' },
+  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-32 shrink-0' },
   { key: 'date_created',  label: 'Дата',          sortable: true,   width: 'w-28 shrink-0' },
 ]
 
@@ -57,9 +57,9 @@ export default function TenderTable({
           <colgroup>
             <col />
             <col className="w-36" />
-            <col className="w-40" />
+            <col className="w-48" />
             <col className="w-20" />
-            <col className="w-44" />
+            <col className="w-32" />
             <col className="w-28" />
           </colgroup>
           <thead>
@@ -108,7 +108,7 @@ export default function TenderTable({
                       {PROCEDURE_LABELS[t.procedure_type ?? ''] ?? t.procedure_type ?? '—'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3">
                     <span className={t.bids_count === 1 ? 'text-risk-high font-bold' : ''}>
                       {t.bids_count}
                     </span>
