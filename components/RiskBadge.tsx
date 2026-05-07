@@ -33,7 +33,7 @@ export default function RiskBadge({ level, score, flags, size = 'md' }: Props) {
     <span
       title={tooltip}
       className={clsx(
-        'inline-flex items-center gap-1 rounded border px-2 font-medium',
+        'inline-flex items-center gap-1 rounded border px-2 font-medium whitespace-nowrap',
         size === 'sm' ? 'py-0.5 text-xs' : 'py-1 text-sm',
         STYLES[level],
       )}
@@ -46,7 +46,7 @@ export default function RiskBadge({ level, score, flags, size = 'md' }: Props) {
         level === 'critical' && 'bg-risk-critical',
       )} />
       {LABELS[level]}
-      {score != null && (
+      {score != null && size !== 'sm' && (
         <span className="opacity-60 text-xs">({(score * 100).toFixed(0)}%)</span>
       )}
     </span>

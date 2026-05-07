@@ -1,8 +1,7 @@
-import { api } from '@/lib/api'
+import { api, fmtAmount, PROCEDURE_LABELS } from '@/lib/api'
 import TrendSection from '@/components/charts/TrendSection'
 import TendersByRegion from '@/components/charts/TendersByRegion'
 import RiskDistribution from '@/components/charts/RiskDistribution'
-import { fmtAmount } from '@/lib/api'
 import Link from 'next/link'
 
 export const revalidate = 300
@@ -42,7 +41,7 @@ export default async function AnalyticsPage() {
               <div key={p.procedure_type} className="flex items-center gap-3">
                 <div className="flex-1">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-white">{p.procedure_type}</span>
+                    <span className="text-white">{PROCEDURE_LABELS[p.procedure_type] ?? p.procedure_type}</span>
                     <span className="text-muted">{p.count.toLocaleString('uk-UA')}</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-border overflow-hidden">

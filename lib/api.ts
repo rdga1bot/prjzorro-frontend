@@ -150,13 +150,18 @@ export function fmtNumber(n?: number | null): string {
 }
 
 export const PROCEDURE_LABELS: Record<string, string> = {
-  aboveThresholdUA:    'Відкриті торги',
-  aboveThresholdEU:    'Відкриті торги (EU)',
-  belowThreshold:      'Спрощена закупівля',
-  reporting:           'Звіт про договір',
-  negotiation:         'Переговорна',
-  'negotiation.quick': 'Переговорна (скорочена)',
-  closeFrameworkAgreementUA: 'Рамкова угода',
+  aboveThreshold:                     'Відкриті торги',
+  aboveThresholdUA:                   'Відкриті торги',
+  aboveThresholdEU:                   'Відкриті торги (EU)',
+  belowThreshold:                     'Спрощена закупівля',
+  priceQuotation:                     'Запит цінових пропозицій',
+  negotiation:                        'Переговорна процедура',
+  'negotiation.quick':                'Переговорна (скорочена)',
+  closeFrameworkAgreementUA:          'Рамкова угода',
+  closeFrameworkAgreementSelectionUA: 'Відбір за рамковою угодою',
+  esco:                               'ЄСКО (енергосервіс)',
+  competitiveOrdering:                'Конкурентний відбір',
+  reporting:                          'Звіт про договір',
 }
 
 export const STATUS_LABELS: Record<string, string> = {

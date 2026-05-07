@@ -3,6 +3,7 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import dynamic from 'next/dynamic'
 import { MapPin, TrendingUp, Users, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react'
+import { PROCEDURE_LABELS } from '@/lib/api'
 
 const BarChart = dynamic(() => import('@/components/charts/HromadaCharts').then(m => m.RegionBarChart), { ssr: false })
 const TrendChart = dynamic(() => import('@/components/charts/HromadaCharts').then(m => m.RegionTrendChart), { ssr: false })
@@ -225,7 +226,7 @@ function RegionDetailView({ detail, onBack }: { detail: RegionDetail; onBack: ()
               return (
                 <div key={pt.procedure_type} className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted truncate max-w-[60%]">{pt.procedure_type}</span>
+                    <span className="text-muted truncate max-w-[60%]">{PROCEDURE_LABELS[pt.procedure_type] ?? pt.procedure_type}</span>
                     <span className="text-white">{pt.tender_count.toLocaleString('uk-UA')} ({pct}%)</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-white/5">

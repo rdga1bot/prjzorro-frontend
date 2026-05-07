@@ -23,7 +23,7 @@ const COLS = [
   { key: 'value_amount',  label: 'Сума',          sortable: true,   width: 'w-36 shrink-0' },
   { key: 'procedure',     label: 'Процедура',     sortable: false,  width: 'w-40 shrink-0' },
   { key: 'bids_count',    label: 'Учасн.',        sortable: false,  width: 'w-20 shrink-0 text-center' },
-  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-28 shrink-0' },
+  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-44 shrink-0' },
   { key: 'date_created',  label: 'Дата',          sortable: true,   width: 'w-28 shrink-0' },
 ]
 
@@ -53,13 +53,13 @@ export default function TenderTable({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[860px] table-fixed text-sm text-white">
+        <table className="w-full min-w-[940px] table-fixed text-sm text-white">
           <colgroup>
             <col />
             <col className="w-36" />
             <col className="w-40" />
             <col className="w-20" />
-            <col className="w-28" />
+            <col className="w-44" />
             <col className="w-28" />
           </colgroup>
           <thead>
@@ -113,8 +113,8 @@ export default function TenderTable({
                       {t.bids_count}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <RiskBadge level={t.risk_level} score={t.risk_score} size="sm" />
+                  <td className="px-4 py-3 overflow-hidden">
+                    <RiskBadge level={t.risk_level} size="sm" />
                   </td>
                   <td className="px-4 py-3 text-muted text-xs">
                     {fmtDate(t.date_created)}
