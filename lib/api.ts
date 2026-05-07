@@ -40,21 +40,23 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 // ── Tenders ───────────────────────────────────────────────────
 export interface TenderFilters {
-  status?:         string
-  procedure_type?: string
-  region?:         string
-  cpv_code?:       string
-  buyer_edrpou?:   string
-  risk_level?:     string
-  flag_type?:      string
-  amount_min?:     number
-  amount_max?:     number
-  date_from?:      string
-  date_to?:        string
-  page?:           number
-  per_page?:       number
-  sort_by?:        string
-  sort_order?:     'asc' | 'desc'
+  status?:             string
+  procedure_type?:     string
+  region?:             string
+  cpv_code?:           string
+  buyer_edrpou?:       string
+  buyer_name?:         string
+  participant_edrpou?: string
+  risk_level?:         string
+  flag_type?:          string
+  amount_min?:         number
+  amount_max?:         number
+  date_from?:          string
+  date_to?:            string
+  page?:               number
+  per_page?:           number
+  sort_by?:            string
+  sort_order?:         'asc' | 'desc'
 }
 
 export const FLAG_LABELS: Record<string, string> = {
