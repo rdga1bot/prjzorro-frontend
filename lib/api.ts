@@ -67,6 +67,7 @@ export const FLAG_LABELS: Record<string, string> = {
   price_anomaly:              'Цінова аномалія',
   sanctioned_entity:          'Санкційний суб\'єкт',
   contract_splitting:         'Дроблення закупівель',
+  new_company_winner:         'Нова компанія-переможець',
 }
 
 export function buildQuery(params: Record<string, unknown>): string {
