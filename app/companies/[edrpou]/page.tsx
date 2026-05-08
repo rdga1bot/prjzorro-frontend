@@ -10,7 +10,7 @@ import { Building2, TrendingUp, ShoppingCart, Network } from 'lucide-react'
 
 interface Props { params: { edrpou: string } }
 
-type Tab = 'buyer' | 'supplier' | 'network'
+type Tab = 'participant' | 'supplier' | 'network'
 
 function StatBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -23,7 +23,7 @@ function StatBox({ label, value, sub }: { label: string; value: string; sub?: st
 }
 
 export default function CompanyPage({ params }: Props) {
-  const [tab, setTab]   = useState<Tab>('buyer')
+  const [tab, setTab]   = useState<Tab>('participant')
   const [page, setPage] = useState(1)
   const router          = useRouter()
 
@@ -60,8 +60,8 @@ export default function CompanyPage({ params }: Props) {
   }
 
   const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'buyer',    label: 'Як замовник',     icon: <ShoppingCart size={15} /> },
-    { key: 'supplier', label: 'Як постачальник', icon: <TrendingUp size={15} /> },
+    { key: 'participant', label: 'Як учасник',    icon: <ShoppingCart size={15} /> },
+    { key: 'supplier', label: 'Як постачальник',  icon: <TrendingUp size={15} /> },
     { key: 'network',  label: 'Граф зв\'язків',  icon: <Network size={15} /> },
   ]
 
@@ -128,11 +128,19 @@ export default function CompanyPage({ params }: Props) {
 
         {/* Stats */}
         <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatBox
-            label="Закупівель (замовник)"
-            value={fmtNumber(company.as_buyer_tenders_count)}
-            sub={fmtAmount(company.as_buyer_total_amount)}
-          />
+          {company.as_buyer_tenders_count > 0 ? (
+            <StatBox
+              label="Закупівель (замовник)"
+              value={fmtNumber(company.as_buyer_tenders_count)}
+              sub={fmtAmount(company.as_buyer_total_amount)}
+            />
+          ) : (
+            <StatBox
+              label="Участь у тендерах"
+              value={fmtNumber(company.as_supplier_bids_count)}
+              sub="подано заявок"
+            />
+          )}
           <StatBox
             label="Перемог (постачальник)"
             value={fmtNumber(company.as_supplier_tenders_count)}
@@ -140,7 +148,9 @@ export default function CompanyPage({ params }: Props) {
           />
           <StatBox
             label="Win rate"
-            value={`${(company.as_supplier_win_rate * 100).toFixed(1)}%`}
+            value={company.as_supplier_bids_count > 0
+              ? `${((company.as_supplier_tenders_count / company.as_supplier_bids_count) * 100).toFixed(1)}%`
+              : '—'}
             sub="від поданих заявок"
           />
           <StatBox

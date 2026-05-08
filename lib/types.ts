@@ -77,6 +77,7 @@ export interface CompanyProfile {
   as_buyer_tenders_count:    number
   as_buyer_total_amount:     number
   as_supplier_tenders_count: number
+  as_supplier_bids_count:    number
   as_supplier_total_amount:  number
   as_supplier_win_rate:      number
   risk_score:                number
