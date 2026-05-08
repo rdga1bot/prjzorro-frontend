@@ -53,7 +53,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <footer className="border-t border-border mt-16 py-6 text-center text-xs text-muted">
           Дані: <a href="https://prozorro.gov.ua" className="hover:text-white">Prozorro</a> · CC BY ·{' '}
-          <a href="https://public-api.prozorro.gov.ua" className="hover:text-white">API</a>
+          <a href="https://public-api.prozorro.gov.ua" className="hover:text-white">API</a> ·{' '}
+          <Link href="/privacy" className="hover:text-white">Конфіденційність</Link>
         </footer>
       </body>
     </html>
