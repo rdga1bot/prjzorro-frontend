@@ -9,15 +9,19 @@ export default function SearchBar({ placeholder = 'Пошук тендерів, 
   const [suggestions, setSuggestions] = useState<Array<{ id: string; name?: string; title?: string; type: string }>>([])
   const [open,        setOpen]        = useState(false)
   const [idx,         setIdx]         = useState(-1)
-  const router  = useRouter()
+  const router   = useRouter()
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
   const wrapRef  = useRef<HTMLDivElement>(null)
+  const cacheRef = useRef<Map<string, Array<{ id: string; name?: string; title?: string; type: string }>>>(new Map())
 
   useEffect(() => {
     if (query.length < 2) { setSuggestions([]); setOpen(false); return }
+    const cached = cacheRef.current.get(query)
+    if (cached) { setSuggestions(cached); setOpen(cached.length > 0); return }
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(async () => {
       const list = await api.search.autocomplete(query).catch(() => [])
+      cacheRef.current.set(query, list)
       setSuggestions(list)
       setOpen(list.length > 0)
     }, 250)

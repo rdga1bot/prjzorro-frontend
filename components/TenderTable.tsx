@@ -1,4 +1,5 @@
 'use client'
+import { memo } from 'react'
 import Link from 'next/link'
 import { fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS } from '@/lib/api'
 import type { TenderListItem } from '@/lib/types'
@@ -39,7 +40,7 @@ function SkeletonRow() {
   )
 }
 
-export default function TenderTable({
+function TenderTable({
   items, total, page, perPage, pages,
   sortBy, sortOrder, onPageChange, onSort, loading,
 }: Props) {
@@ -176,3 +177,5 @@ export default function TenderTable({
     </div>
   )
 }
+
+export default memo(TenderTable)
