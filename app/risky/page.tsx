@@ -1,6 +1,6 @@
-import { api, fmtAmount, fmtNumber, FLAG_LABELS } from '@/lib/api'
+import { fmtNumber, FLAG_LABELS } from '@/lib/api'
 import Link from 'next/link'
-import RiskBadge from '@/components/RiskBadge'
+import RiskLeaderTable from '@/components/RiskLeaderTable'
 
 export const revalidate = 300
 
@@ -13,63 +13,6 @@ async function getRiskLeaders() {
   } catch { return null }
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const pct = Math.round(score * 100)
-  const color = pct >= 70 ? 'bg-risk-critical' : pct >= 50 ? 'bg-risk-high' : pct >= 30 ? 'bg-risk-medium' : 'bg-risk-low'
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-24 rounded-full bg-border overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className="text-xs text-muted w-8">{pct}%</span>
-    </div>
-  )
-}
-
-function EntityTable({ rows, role }: { rows: any[]; role: 'buyer' | 'supplier' }) {
-  const path = role === 'buyer' ? 'tenders?buyer_edrpou' : 'companies'
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left">
-            <th className="px-4 py-2 text-xs text-muted font-medium">Назва</th>
-            <th className="px-4 py-2 text-xs text-muted font-medium w-20 text-right">Тендерів</th>
-            <th className="px-4 py-2 text-xs text-muted font-medium w-20 text-right">Вис. ризик</th>
-            <th className="px-4 py-2 text-xs text-muted font-medium w-36">Серед. ризик</th>
-            <th className="px-4 py-2 text-xs text-muted font-medium w-32 text-right">Сума</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={r.edrpou} className="border-t border-border hover:bg-white/5 transition-colors">
-              <td className="px-4 py-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted text-xs w-5 shrink-0">{i + 1}</span>
-                  <div>
-                    <Link
-                      href={role === 'buyer' ? `/tenders?buyer_edrpou=${r.edrpou}` : `/companies/${r.edrpou}`}
-                      className="text-white hover:text-accent transition-colors line-clamp-1"
-                    >
-                      {r.name || r.edrpou}
-                    </Link>
-                    <span className="text-xs text-muted">{r.edrpou}</span>
-                  </div>
-                </div>
-              </td>
-              <td className="px-4 py-2.5 text-right text-muted">{fmtNumber(r.tender_count)}</td>
-              <td className="px-4 py-2.5 text-right">
-                <span className="text-risk-high font-medium">{fmtNumber(r.high_risk_count)}</span>
-              </td>
-              <td className="px-4 py-2.5"><ScoreBar score={parseFloat(r.avg_risk_score)} /></td>
-              <td className="px-4 py-2.5 text-right text-muted text-xs">{fmtAmount(r.total_amount)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
 
 export default async function RiskyPage() {
   const data = await getRiskLeaders()
@@ -111,7 +54,7 @@ export default async function RiskyPage() {
             <h2 className="text-sm font-semibold text-white">Замовники з найвищим ризиком</h2>
             <p className="text-xs text-muted mt-0.5">≥5 тендерів, сортування по середньому скору</p>
           </div>
-          <EntityTable rows={data.top_buyers} role="buyer" />
+          <RiskLeaderTable rows={data.top_buyers} role="buyer" />
         </div>
 
         <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -119,7 +62,7 @@ export default async function RiskyPage() {
             <h2 className="text-sm font-semibold text-white">Постачальники з найвищим ризиком</h2>
             <p className="text-xs text-muted mt-0.5">≥3 перемоги, сортування по середньому скору</p>
           </div>
-          <EntityTable rows={data.top_suppliers} role="supplier" />
+          <RiskLeaderTable rows={data.top_suppliers} role="supplier" />
         </div>
       </div>
     </div>
