@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { Search, X, ArrowLeftRight } from 'lucide-react'
 
 /* ── Company search autocomplete ─────────────────────────── */
-interface SearchHit { edrpou: string; name: string; region: string; total_tenders: number }
+interface SearchHit { edrpou: string; name: string; region?: string; total_tenders?: number }
 
 function CompanySearch({
   value, onSelect, placeholder,
@@ -18,12 +18,16 @@ function CompanySearch({
   const [open, setOpen]         = useState(false)
   const ref                     = useRef<HTMLDivElement>(null)
 
-  const { data } = useSWR(
-    q.length >= 2 ? `search-company-${q}` : null,
+  const { data } = useSWR<SearchHit[]>(
+    q.length >= 2 ? `autocomplete-company-${q}` : null,
     async () => {
-      const r = await fetch(`/api/v1/search/?q=${encodeURIComponent(q)}&limit=8`)
-      const d = await r.json()
-      return (d.companies ?? []) as SearchHit[]
+      const r = await fetch(
+        `/api/v1/search/autocomplete?q=${encodeURIComponent(q)}&type=company`,
+      )
+      if (!r.ok) return []
+      const hits = await r.json()
+      // autocomplete повертає [{edrpou, name, type}, ...]
+      return (Array.isArray(hits) ? hits : []) as SearchHit[]
     },
     { keepPreviousData: true },
   )
@@ -59,19 +63,21 @@ function CompanySearch({
           placeholder={placeholder}
           value={q}
           onChange={e => { setQ(e.target.value); setOpen(true) }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => q.length >= 2 && setOpen(true)}
+          autoComplete="off"
         />
       </div>
       {open && data && data.length > 0 && (
-        <div className="absolute z-20 mt-1 w-full rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+        <div className="absolute z-30 mt-1 w-full rounded-xl border border-border bg-card shadow-xl overflow-hidden">
           {data.map(hit => (
             <button
               key={hit.edrpou}
+              onMouseDown={e => e.preventDefault()}   // не закриваємо при кліку
               onClick={() => { onSelect(hit); setQ(''); setOpen(false) }}
               className="w-full text-left px-4 py-2.5 hover:bg-white/5 transition-colors border-b border-border last:border-0"
             >
               <p className="text-sm text-white truncate">{hit.name}</p>
-              <p className="text-xs text-muted">{hit.edrpou}{hit.region ? ` · ${hit.region}` : ''}</p>
+              <p className="text-xs text-muted">{hit.edrpou}</p>
             </button>
           ))}
         </div>
