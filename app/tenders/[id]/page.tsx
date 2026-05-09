@@ -81,6 +81,45 @@ function BenchmarkSection({ b }: { b: BenchmarkData }) {
   )
 }
 
+function TimelineSection({ tender }: { tender: import('@/lib/types').TenderDetail }) {
+  const steps: { label: string; date: string | null | undefined; done: boolean }[] = [
+    { label: 'Опубліковано',           date: tender.date_created,        done: !!tender.date_created },
+    { label: 'Прийом пропозицій',      date: tender.tender_period_start, done: !!tender.tender_period_start },
+    { label: 'Кінець прийому',         date: tender.tender_period_end,   done: !!tender.tender_period_end },
+    { label: 'Кінець визначення',      date: tender.award_period_end,    done: !!tender.award_period_end },
+    {
+      label: 'Переможець',
+      date:  tender.awards.find(a => a.status === 'active')?.date ?? null,
+      done:  tender.awards.some(a => a.status === 'active'),
+    },
+    {
+      label: 'Завершено',
+      date:  tender.status === 'complete' ? tender.date_modified : null,
+      done:  tender.status === 'complete',
+    },
+  ]
+
+  return (
+    <div className="relative">
+      <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
+      <div className="space-y-4">
+        {steps.map((s, i) => (
+          <div key={i} className="flex items-start gap-4">
+            <div className={`relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold
+              ${s.done ? 'border-accent bg-accent/20 text-accent' : 'border-border bg-bg text-muted'}`}>
+              {s.done ? '✓' : ''}
+            </div>
+            <div className="flex-1 flex items-center justify-between gap-2 min-w-0">
+              <span className={`text-sm ${s.done ? 'text-white' : 'text-muted'}`}>{s.label}</span>
+              {s.date && <span className="text-xs text-muted shrink-0">{fmtDate(s.date)}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function RelatedTendersSection({ data }: { data: RelatedTendersResponse }) {
   if (data.total === 0) return null
   return (
@@ -271,6 +310,11 @@ export default async function TenderPage({ params }: Props) {
           </div>
         </Section>
       )}
+
+      {/* Хронологія тендера */}
+      <Section title="Хронологія">
+        <TimelineSection tender={tender} />
+      </Section>
 
       {/* Red flags */}
       {tender.risk_flags.length > 0 && (
