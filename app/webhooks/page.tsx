@@ -60,7 +60,7 @@ export default function WebhooksPage() {
       <div className="max-w-lg mx-auto mt-16 space-y-4 text-center">
         <AlertCircle size={40} className="mx-auto text-muted" />
         <h1 className="text-xl font-bold text-white">Потрібна авторизація</h1>
-        <p className="text-sm text-muted">Для управління Webhooks увійдіть в акаунт</p>
+        <p className="text-sm text-muted">Для управління вебхуками увійдіть в акаунт</p>
         <Link href="/login"
           className="inline-block rounded-lg bg-accent px-5 py-2 text-sm font-medium text-white hover:bg-accent/80 transition-colors">
           Увійти
@@ -134,7 +134,7 @@ export default function WebhooksPage() {
     <div className="max-w-2xl mx-auto space-y-8">
       <div className="flex items-center gap-3">
         <Webhook size={22} className="text-accent" />
-        <h1 className="text-xl font-bold text-white">Webhooks</h1>
+        <h1 className="text-xl font-bold text-white">Вебхуки</h1>
       </div>
 
       {/* Secret показується один раз */}
@@ -206,7 +206,7 @@ export default function WebhooksPage() {
         <h2 className="text-sm font-semibold text-white">Мої webhooks</h2>
 
         {webhooks && webhooks.length === 0 && (
-          <p className="text-sm text-muted">Webhooks ще не створені</p>
+          <p className="text-sm text-muted">Вебхуки ще не створені</p>
         )}
 
         {webhooks && webhooks.length > 0 && (
