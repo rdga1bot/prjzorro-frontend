@@ -6,7 +6,8 @@ import RiskBadge from '@/components/RiskBadge'
 import TenderTable from '@/components/TenderTable'
 import CompanyNetwork from '@/components/CompanyNetwork'
 import { useRouter } from 'next/navigation'
-import { Building2, TrendingUp, ShoppingCart, Network, Landmark } from 'lucide-react'
+import { Building2, TrendingUp, ShoppingCart, Network, Landmark, ArrowLeftRight } from 'lucide-react'
+import Link from 'next/link'
 
 interface Props { params: { edrpou: string } }
 
@@ -103,7 +104,15 @@ export default function CompanyPage({ params }: Props) {
               </p>
             </div>
           </div>
-          <RiskBadge level={company.risk_level} score={company.risk_score} />
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/compare?a=${company.edrpou}`}
+              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted hover:text-white hover:border-white/30 transition-colors"
+            >
+              <ArrowLeftRight size={13} /> Порівняти
+            </Link>
+            <RiskBadge level={company.risk_level} score={company.risk_score} />
+          </div>
         </div>
 
         {/* Деталі */}
@@ -156,13 +165,21 @@ export default function CompanyPage({ params }: Props) {
             value={fmtNumber(company.as_supplier_tenders_count)}
             sub={fmtAmount(company.as_supplier_total_amount)}
           />
-          <StatBox
-            label="Win rate"
-            value={company.as_supplier_bids_count > 0
-              ? `${((company.as_supplier_tenders_count / company.as_supplier_bids_count) * 100).toFixed(1)}%`
-              : '—'}
-            sub="від поданих заявок"
-          />
+          {company.as_buyer_tenders_count > 0 && company.as_buyer_avg_bids > 0 ? (
+            <StatBox
+              label="Конкуренція"
+              value={`${company.as_buyer_avg_bids.toFixed(1)} уч./тендер`}
+              sub="середня кількість учасників"
+            />
+          ) : (
+            <StatBox
+              label="Win rate"
+              value={company.as_supplier_bids_count > 0
+                ? `${((company.as_supplier_tenders_count / company.as_supplier_bids_count) * 100).toFixed(1)}%`
+                : '—'}
+              sub="від поданих заявок"
+            />
+          )}
           <StatBox
             label="Red flags"
             value={String(company.active_flags_count)}

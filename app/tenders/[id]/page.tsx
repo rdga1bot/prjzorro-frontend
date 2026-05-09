@@ -1,4 +1,5 @@
 import { api, fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS, type SpendingData } from '@/lib/api'
+import type { BenchmarkData } from '@/lib/types'
 import RiskBadge from '@/components/RiskBadge'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -22,6 +23,60 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
     <div>
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="mt-0.5 text-sm text-white">{value ?? '—'}</dd>
+    </div>
+  )
+}
+
+function BenchmarkSection({ b }: { b: BenchmarkData }) {
+  if (b.count === 0 || !b.avg_amount) return null
+
+  const current = b.current_amount
+  const min     = b.min_amount ?? 0
+  const max     = b.max_amount ?? current
+  const range   = max - min || 1
+  const pct     = Math.min(100, Math.max(0, ((current - min) / range) * 100))
+  const dev     = b.deviation_pct
+  const devText = dev === null ? null : dev > 0 ? `+${dev}%` : `${dev}%`
+  const devColor = dev === null ? 'text-muted'
+    : dev > 20  ? 'text-risk-high'
+    : dev > 0   ? 'text-risk-medium'
+    : 'text-risk-low'
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: 'Мінімальна', value: fmtAmount(b.min_amount) },
+          { label: 'Медіана',    value: fmtAmount(b.median) },
+          { label: 'Середня',   value: fmtAmount(b.avg_amount) },
+          { label: 'Максимальна', value: fmtAmount(b.max_amount) },
+        ].map(s => (
+          <div key={s.label} className="rounded-lg border border-border bg-bg p-3">
+            <p className="text-xs text-muted">{s.label}</p>
+            <p className="mt-1 text-sm font-semibold text-white">{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Position bar */}
+      <div>
+        <div className="flex justify-between text-xs text-muted mb-1">
+          <span>Поточна ціна: <b className="text-white">{fmtAmount(current)}</b></span>
+          {devText && <span className={`font-semibold ${devColor}`}>{devText} від середньої</span>}
+        </div>
+        <div className="relative h-2 rounded-full bg-border">
+          <div className="h-full rounded-full bg-accent/30"
+               style={{ width: `${Math.min(100, ((b.p75 ?? max) - min) / range * 100)}%`,
+                        marginLeft: `${Math.max(0, ((b.p25 ?? min) - min) / range * 100)}%` }} />
+          <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-accent border-2 border-bg"
+               style={{ left: `calc(${pct}% - 6px)` }} />
+        </div>
+        <div className="flex justify-between text-xs text-muted mt-1">
+          <span>{fmtAmount(min)}</span>
+          <span className="text-muted">На основі {b.count} схожих тендерів</span>
+          <span>{fmtAmount(max)}</span>
+        </div>
+      </div>
     </div>
   )
 }
@@ -104,10 +159,12 @@ function SpendingSection({ s }: { s: SpendingData }) {
 export default async function TenderPage({ params }: Props) {
   let tender
   let spending: SpendingData | null = null
+  let benchmark: BenchmarkData | null = null
   try {
-    ;[tender, spending] = await Promise.all([
+    ;[tender, spending, benchmark] = await Promise.all([
       api.tenders.get(params.id),
       api.tenders.spending(params.id).catch(() => null),
+      api.tenders.benchmark(params.id).catch(() => null),
     ])
   } catch {
     notFound()
@@ -204,6 +261,13 @@ export default async function TenderPage({ params }: Props) {
               </div>
             ))}
           </div>
+        </Section>
+      )}
+
+      {/* Ціновий бенчмарк */}
+      {benchmark && benchmark.count > 0 && (
+        <Section title="Ціновий бенчмарк">
+          <BenchmarkSection b={benchmark} />
         </Section>
       )}
 

@@ -13,6 +13,7 @@ interface RegionSummary {
   tender_count: number
   total_amount: number
   avg_amount: number
+  avg_bids: number
   buyer_count: number
   risk_medium: number
   risk_high: number
@@ -42,7 +43,7 @@ function RiskBadge({ label, count, color }: { label: string; count: number; colo
 
 export default function HromadaPage() {
   const [selected, setSelected] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'total_amount' | 'tender_count' | 'buyer_count'>('total_amount')
+  const [sortBy, setSortBy] = useState<'total_amount' | 'tender_count' | 'buyer_count' | 'avg_bids'>('total_amount')
 
   const { data: regions } = useSWR<RegionSummary[]>(
     'hromada-list',
@@ -98,6 +99,7 @@ export default function HromadaPage() {
           ['total_amount', 'За сумою'],
           ['tender_count', 'За к-стю'],
           ['buyer_count',  'За замовниками'],
+          ['avg_bids',     'За конкуренцією'],
         ] as const).map(([key, label]) => (
           <button key={key} onClick={() => setSortBy(key)}
             className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
@@ -130,7 +132,7 @@ export default function HromadaPage() {
                 <Stat icon={<TrendingUp size={11} />} label="Сума" value={fmt(r.total_amount)} />
                 <Stat icon={<Users size={11} />} label="Замовники" value={fmtK(r.buyer_count)} />
                 <Stat label="Тендери" value={fmtK(r.tender_count)} />
-                <Stat label="Сер. сума" value={fmt(r.avg_amount)} />
+                <Stat label="Конкуренція" value={r.avg_bids > 0 ? `${r.avg_bids} уч.` : '—'} />
               </div>
               {(r.risk_medium + r.risk_high + r.risk_critical) > 0 && (
                 <div className="flex flex-wrap gap-1">

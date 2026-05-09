@@ -1,5 +1,17 @@
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 
+export interface BenchmarkData {
+  current_amount: number
+  count:          number
+  avg_amount:     number | null
+  min_amount:     number | null
+  max_amount:     number | null
+  p25:            number | null
+  median:         number | null
+  p75:            number | null
+  deviation_pct:  number | null
+}
+
 export interface RiskFlag {
   flag_type:   string
   severity:    RiskLevel
@@ -76,6 +88,7 @@ export interface CompanyProfile {
   beneficiaries?:            Array<{ name: string; edrpou?: string; share?: number }>
   as_buyer_tenders_count:    number
   as_buyer_total_amount:     number
+  as_buyer_avg_bids:         number
   as_supplier_tenders_count: number
   as_supplier_bids_count:    number
   as_supplier_total_amount:  number
