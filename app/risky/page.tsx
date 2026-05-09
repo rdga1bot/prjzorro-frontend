@@ -2,12 +2,12 @@ import { fmtNumber, FLAG_LABELS } from '@/lib/api'
 import Link from 'next/link'
 import RiskLeaderTable from '@/components/RiskLeaderTable'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 async function getRiskLeaders() {
   try {
     const BASE = process.env.API_URL ?? 'http://api:8000'
-    const res = await fetch(`${BASE}/api/v1/stats/risk-leaders?limit=20`, { next: { revalidate: 300 } })
+    const res = await fetch(`${BASE}/api/v1/stats/risk-leaders?limit=20`, { cache: 'no-store' })
     if (!res.ok) return null
     return res.json()
   } catch { return null }

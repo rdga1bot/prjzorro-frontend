@@ -1,8 +1,8 @@
-import { api, fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS } from '@/lib/api'
+import { api, fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS, type SpendingData } from '@/lib/api'
 import RiskBadge from '@/components/RiskBadge'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { AlertTriangle, Users, Award, Calendar, Building2 } from 'lucide-react'
+import { AlertTriangle, Users, Building2, TrendingUp } from 'lucide-react'
 
 export const revalidate = 300
 
@@ -26,10 +26,89 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
+function SpendingSection({ s }: { s: SpendingData }) {
+  if (s.data_status === 'not_fetched') {
+    return (
+      <p className="text-xs text-muted">
+        Дані Spending.gov.ua ще не завантажені для цього тендера.
+      </p>
+    )
+  }
+
+  const pct = s.execution_rate != null ? Math.min(s.execution_rate * 100, 100) : 0
+  const barColor =
+    pct >= 100 ? 'bg-risk-low' :
+    pct >= 50  ? 'bg-yellow-500' :
+                 'bg-risk-high'
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap justify-between gap-2 text-sm">
+        <div>
+          <span className="text-muted text-xs">Заплановано</span>
+          <p className="font-mono font-semibold text-white">{fmtAmount(s.planned_amount)}</p>
+        </div>
+        <div className="text-right">
+          <span className="text-muted text-xs">Сплачено</span>
+          <p className="font-mono font-semibold text-white">{fmtAmount(s.paid_amount)}</p>
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-muted">
+          <span>Виконання договору</span>
+          <span>{s.execution_rate != null ? `${(s.execution_rate * 100).toFixed(1)}%` : '—'}</span>
+        </div>
+        <div className="h-2 rounded-full bg-border overflow-hidden">
+          <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+
+      {s.transactions.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border text-muted">
+                <th className="pb-2 text-left font-medium">Дата</th>
+                <th className="pb-2 text-left font-medium">Документ</th>
+                <th className="pb-2 text-right font-medium">Сума</th>
+                <th className="pb-2 text-left font-medium">Постачальник</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {s.transactions.map((tx, i) => (
+                <tr key={i} className="text-white">
+                  <td className="py-2 pr-3 whitespace-nowrap">{fmtDate(tx.date)}</td>
+                  <td className="py-2 pr-3 font-mono text-muted">{tx.doc_number}</td>
+                  <td className="py-2 pr-3 text-right font-mono">{fmtAmount(tx.amount, tx.currency)}</td>
+                  <td className="py-2">
+                    {tx.supplier_edrpou
+                      ? <Link href={`/companies/${tx.supplier_edrpou}`} className="text-accent hover:underline">{tx.supplier_edrpou}</Link>
+                      : <span className="text-muted">—</span>
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {s.last_fetched && (
+        <p className="text-xs text-muted">Дані оновлено: {fmtDate(s.last_fetched)}</p>
+      )}
+    </div>
+  )
+}
+
 export default async function TenderPage({ params }: Props) {
   let tender
+  let spending: SpendingData | null = null
   try {
-    tender = await api.tenders.get(params.id)
+    ;[tender, spending] = await Promise.all([
+      api.tenders.get(params.id),
+      api.tenders.spending(params.id).catch(() => null),
+    ])
   } catch {
     notFound()
   }
@@ -125,6 +204,13 @@ export default async function TenderPage({ params }: Props) {
               </div>
             ))}
           </div>
+        </Section>
+      )}
+
+      {/* Виконання договору */}
+      {spending && (
+        <Section title="Виконання договору (Spending.gov.ua)">
+          <SpendingSection s={spending} />
         </Section>
       )}
 

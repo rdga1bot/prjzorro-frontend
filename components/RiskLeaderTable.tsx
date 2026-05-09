@@ -1,6 +1,5 @@
 'use client'
-import { memo, useCallback } from 'react'
-import { FixedSizeList, type ListChildComponentProps } from 'react-window'
+import { memo } from 'react'
 import Link from 'next/link'
 import { fmtAmount, fmtNumber } from '@/lib/api'
 
@@ -38,40 +37,7 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 function RiskLeaderTable({ rows, role }: Props) {
-  const Row = useCallback(({ index, style }: ListChildComponentProps) => {
-    const r = rows[index]
-    return (
-      <div style={style} className="flex items-center border-t border-border hover:bg-white/5 transition-colors text-sm">
-        {/* # */}
-        <div className="w-8 shrink-0 px-3 text-xs text-muted">{index + 1}</div>
-        {/* Назва */}
-        <div className="flex-1 min-w-0 px-2 py-2">
-          <Link
-            href={role === 'buyer' ? `/tenders?buyer_edrpou=${r.edrpou}` : `/companies/${r.edrpou}`}
-            className="block line-clamp-1 font-medium text-white hover:text-accent transition-colors"
-          >
-            {r.name || r.edrpou}
-          </Link>
-          <span className="text-xs text-muted">{r.edrpou}</span>
-        </div>
-        {/* Тендерів */}
-        <div className="w-20 shrink-0 px-3 text-right text-muted">{fmtNumber(r.tender_count)}</div>
-        {/* Вис. ризик */}
-        <div className="w-20 shrink-0 px-3 text-right font-medium text-risk-high">
-          {fmtNumber(r.high_risk_count)}
-        </div>
-        {/* Серед. ризик */}
-        <div className="w-36 shrink-0 px-3">
-          <ScoreBar score={parseFloat(String(r.avg_risk_score))} />
-        </div>
-        {/* Сума */}
-        <div className="w-32 shrink-0 px-3 text-right text-xs text-muted">
-          {fmtAmount(r.total_amount)}
-        </div>
-      </div>
-    )
-  }, [rows, role])
-
+  const visible = rows.slice(0, MAX_VISIBLE)
   const listHeight = Math.min(rows.length, MAX_VISIBLE) * ROW_HEIGHT
 
   return (
@@ -85,16 +51,37 @@ function RiskLeaderTable({ rows, role }: Props) {
         <div className="w-36 shrink-0 px-3 py-2">Серед. ризик</div>
         <div className="w-32 shrink-0 px-3 py-2 text-right">Сума</div>
       </div>
-      {/* Virtual rows */}
-      <FixedSizeList
-        height={listHeight}
-        itemCount={rows.length}
-        itemSize={ROW_HEIGHT}
-        width="100%"
-        overscanCount={3}
-      >
-        {Row}
-      </FixedSizeList>
+      {/* Rows */}
+      <div style={{ maxHeight: listHeight, overflowY: rows.length > MAX_VISIBLE ? 'auto' : 'visible' }}>
+        {visible.map((r, index) => (
+          <div
+            key={r.edrpou}
+            style={{ height: ROW_HEIGHT }}
+            className="flex items-center border-t border-border hover:bg-white/5 transition-colors text-sm overflow-hidden"
+          >
+            <div className="w-8 shrink-0 px-3 text-xs text-muted">{index + 1}</div>
+            <div className="flex-1 min-w-0 overflow-hidden px-2 py-2">
+              <Link
+                href={role === 'buyer' ? `/tenders?buyer_edrpou=${r.edrpou}` : `/companies/${r.edrpou}`}
+                className="block truncate font-medium text-white hover:text-accent transition-colors"
+              >
+                {r.name || r.edrpou}
+              </Link>
+              <span className="block truncate text-xs text-muted">{r.edrpou}</span>
+            </div>
+            <div className="w-20 shrink-0 px-3 text-right text-muted">{fmtNumber(r.tender_count)}</div>
+            <div className="w-20 shrink-0 px-3 text-right font-medium text-risk-high">
+              {fmtNumber(r.high_risk_count)}
+            </div>
+            <div className="w-36 shrink-0 px-3">
+              <ScoreBar score={parseFloat(String(r.avg_risk_score))} />
+            </div>
+            <div className="w-32 shrink-0 px-3 text-right text-xs text-muted">
+              {fmtAmount(r.total_amount)}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

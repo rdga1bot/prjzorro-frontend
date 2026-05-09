@@ -1,16 +1,16 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { api, fmtAmount, fmtNumber, fmtDate } from '@/lib/api'
 import RiskBadge from '@/components/RiskBadge'
 import TenderTable from '@/components/TenderTable'
 import CompanyNetwork from '@/components/CompanyNetwork'
 import { useRouter } from 'next/navigation'
-import { Building2, TrendingUp, ShoppingCart, Network } from 'lucide-react'
+import { Building2, TrendingUp, ShoppingCart, Network, Landmark } from 'lucide-react'
 
 interface Props { params: { edrpou: string } }
 
-type Tab = 'participant' | 'supplier' | 'network'
+type Tab = 'buyer' | 'participant' | 'supplier' | 'network'
 
 function StatBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -23,7 +23,7 @@ function StatBox({ label, value, sub }: { label: string; value: string; sub?: st
 }
 
 export default function CompanyPage({ params }: Props) {
-  const [tab, setTab]   = useState<Tab>('participant')
+  const [tab, setTab] = useState<Tab>('participant')
   const [page, setPage] = useState(1)
   const router          = useRouter()
 
@@ -42,6 +42,13 @@ export default function CompanyPage({ params }: Props) {
     () => api.companies.network(params.edrpou, 2),
   )
 
+  // Автоматично відкрити вкладку "Як замовник" для держорганів без ролі постачальника
+  useEffect(() => {
+    if (company && company.as_buyer_tenders_count > 0 && !company.as_supplier_bids_count) {
+      setTab('buyer')
+    }
+  }, [company])
+
   if (loadingCompany) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -59,9 +66,12 @@ export default function CompanyPage({ params }: Props) {
     )
   }
 
+  const isBuyer = company.as_buyer_tenders_count > 0
+
   const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'participant', label: 'Як учасник',    icon: <ShoppingCart size={15} /> },
-    { key: 'supplier', label: 'Як постачальник',  icon: <TrendingUp size={15} /> },
+    ...(isBuyer ? [{ key: 'buyer' as Tab, label: 'Як Замовник', icon: <Landmark size={15} /> }] : []),
+    { key: 'participant', label: 'Як Учасник',    icon: <ShoppingCart size={15} /> },
+    { key: 'supplier', label: 'Як Постачальник',  icon: <TrendingUp size={15} /> },
     { key: 'network',  label: 'Граф зв\'язків',  icon: <Network size={15} /> },
   ]
 
@@ -194,7 +204,7 @@ export default function CompanyPage({ params }: Props) {
           {loadingNetwork
             ? <div className="h-[420px] rounded-xl bg-card animate-pulse" />
             : <CompanyNetwork
-                data={network ?? { nodes: [], edges: [] }}
+                data={network ?? { nodes: [], edges: [], total_nodes: 0 }}
                 onSelect={edrpou => router.push(`/companies/${edrpou}`)}
               />
           }

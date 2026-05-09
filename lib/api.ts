@@ -65,14 +65,18 @@ export const FLAG_LABELS: Record<string, string> = {
   no_price_competition:       'Без цінової конкуренції',
   below_threshold_high_amount:'Велика сума нижче порогу',
   mass_disqualification:      'Масова дискваліфікація',
-  repeated_winner:            'Повторний переможець',
-  price_anomaly:              'Цінова аномалія',
-  sanctioned_entity:          'Санкційний суб\'єкт',
-  contract_splitting:         'Дроблення закупівель',
-  new_company_winner:         'Нова компанія-переможець',
+  repeated_winner:              'Повторний переможець',
+  price_anomaly:                'Цінова аномалія',
+  sanctioned_entity:            'Санкційний суб\'єкт',
+  contract_splitting:           'Дроблення закупівель',
+  new_company_winner:           'Нова компанія-переможець',
+  accelerated_above_threshold:  'Прискорена процедура',
+  suspicious_specs:             'Специфічні вимоги',
+  zero_discount:                'Нульові знижки (змова)',
+  cheaper_bidder_disqualified:  'Дискваліфікація дешевших',
 }
 
-export function buildQuery(params: Record<string, unknown>): string {
+export function buildQuery(params: object): string {
   const q = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== '') q.set(k, String(v))
@@ -88,6 +92,27 @@ export function exportUrl(fmt: 'csv' | 'xlsx', filters: TenderFilters = {}): str
   return `${base}/api/v1/export/tenders${buildQuery({ format: fmt, ...filters })}`
 }
 
+export interface SpendingTransaction {
+  date: string | null
+  doc_number: string
+  doc_type: string
+  amount: number
+  currency: string
+  supplier_edrpou: string | null
+  contract_id: string | null
+}
+
+export interface SpendingData {
+  tender_id: string
+  planned_amount: number
+  paid_amount: number
+  execution_rate: number | null
+  tx_count: number
+  data_status: string
+  last_fetched: string | null
+  transactions: SpendingTransaction[]
+}
+
 export const api = {
   tenders: {
     list: (f: TenderFilters = {}) =>
@@ -98,6 +123,9 @@ export const api = {
 
     similar: (id: string, limit = 5) =>
       apiFetch<PaginatedResponse<TenderListItem>>(`/api/v1/tenders/${id}/similar?limit=${limit}`),
+
+    spending: (id: string) =>
+      apiFetch<SpendingData>(`/api/v1/tenders/${id}/spending`),
   },
 
   companies: {

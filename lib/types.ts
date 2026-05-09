@@ -92,11 +92,19 @@ export interface NetworkNode {
   type:        'buyer' | 'supplier' | 'both'
   amount:      number
   risk_level?: RiskLevel
+  // d3 SimulationNodeDatum fields
+  index?: number
+  x?: number
+  y?: number
+  vx?: number
+  vy?: number
+  fx?: number | null
+  fy?: number | null
 }
 
 export interface NetworkEdge {
-  source:       string
-  target:       string
+  source:       string | NetworkNode
+  target:       string | NetworkNode
   relation:     string
   description?: string
   weight:       number

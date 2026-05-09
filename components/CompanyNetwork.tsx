@@ -100,10 +100,10 @@ export default function CompanyNetwork({ data, onSelect }: Props) {
 
       simulation.on('tick', () => {
         link
-          .attr('x1', d => (d.source as NetworkNode).x ?? 0)
-          .attr('y1', d => (d.source as NetworkNode).y ?? 0)
-          .attr('x2', d => (d.target as NetworkNode).x ?? 0)
-          .attr('y2', d => (d.target as NetworkNode).y ?? 0)
+          .attr('x1', d => (d.source as unknown as NetworkNode).x ?? 0)
+          .attr('y1', d => (d.source as unknown as NetworkNode).y ?? 0)
+          .attr('x2', d => (d.target as unknown as NetworkNode).x ?? 0)
+          .attr('y2', d => (d.target as unknown as NetworkNode).y ?? 0)
         node.attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`)
       })
 

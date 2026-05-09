@@ -4,7 +4,7 @@ import TendersByRegion from '@/components/charts/TendersByRegion'
 import RiskDistribution from '@/components/charts/RiskDistribution'
 import Link from 'next/link'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export default async function AnalyticsPage() {
   let stats

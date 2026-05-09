@@ -9,7 +9,7 @@ import { fmtAmount, fmtDate } from '@/lib/api'
 import RiskBadge from '@/components/RiskBadge'
 
 // Server Component — дані завантажуються на сервері
-export const revalidate = 60   // ISR: оновлюємо кожну хвилину
+export const dynamic = 'force-dynamic'
 
 async function getDashboard() {
   try {
