@@ -71,7 +71,7 @@ export default function HromadaPage() {
         <div className="flex items-center gap-3">
           <MapPin size={22} className="text-accent" />
           <div>
-            <h1 className="text-xl font-bold text-white">Clarity Hromada</h1>
+            <h1 className="text-xl font-bold text-white">Громади</h1>
             <p className="text-xs text-muted">Аналіз державних закупівель по регіонах України</p>
           </div>
         </div>
