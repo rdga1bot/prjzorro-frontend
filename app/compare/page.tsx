@@ -95,16 +95,17 @@ function better(a: number, b: number, higherIsBetter: boolean): Winner {
 }
 
 function Row({
-  label, a, b, winner, format = v => String(v),
+  label, a, b, winner, format = v => String(v), zeroOk = false,
 }: {
   label: string
   a: number | string | null
   b: number | string | null
   winner?: Winner
   format?: (v: number) => string
+  zeroOk?: boolean
 }) {
-  const fmtVal = (v: number | string | null) =>
-    v === null || v === 0 ? '—' : typeof v === 'string' ? v : format(v)
+  const fmtVal = (v: number | string | null): string =>
+    v === null || (!zeroOk && v === 0) ? '—' : typeof v === 'string' ? v : format(v as number)
 
   const cellCls = (side: 'a' | 'b') =>
     `px-4 py-3 text-sm text-right font-medium ${
@@ -126,15 +127,20 @@ function CompareTable({ a, b }: { a: CompanyProfile; b: CompanyProfile }) {
       ? parseFloat(((c.as_supplier_tenders_count / c.as_supplier_bids_count) * 100).toFixed(1))
       : 0
 
-  const rows: { label: string; va: number; vb: number; higherIsBetter: boolean; fmt?: (v: number) => string }[] = [
-    { label: 'Закупівель (замовник)',    va: a.as_buyer_tenders_count,    vb: b.as_buyer_tenders_count,    higherIsBetter: true,  fmt: fmtNumber },
-    { label: 'Сума закупівель',         va: a.as_buyer_total_amount,     vb: b.as_buyer_total_amount,     higherIsBetter: true,  fmt: fmtAmount },
-    { label: 'Конкуренція (уч./тендер)',va: a.as_buyer_avg_bids,         vb: b.as_buyer_avg_bids,         higherIsBetter: true,  fmt: v => v.toFixed(1) },
-    { label: 'Перемог (постачальник)',  va: a.as_supplier_tenders_count, vb: b.as_supplier_tenders_count, higherIsBetter: true,  fmt: fmtNumber },
-    { label: 'Сума перемог',            va: a.as_supplier_total_amount,  vb: b.as_supplier_total_amount,  higherIsBetter: true,  fmt: fmtAmount },
-    { label: 'Win rate',               va: winRate(a),                  vb: winRate(b),                  higherIsBetter: true,  fmt: v => `${v}%` },
-    { label: 'Ризик-скор',             va: a.risk_score,                vb: b.risk_score,                higherIsBetter: false, fmt: v => v.toFixed(2) },
-    { label: 'Red flags',              va: a.active_flags_count,        vb: b.active_flags_count,        higherIsBetter: false, fmt: fmtNumber },
+  const isBuyer = a.as_buyer_tenders_count > 0 || b.as_buyer_tenders_count > 0
+
+  const rows: { label: string; va: number; vb: number; higherIsBetter: boolean; fmt?: (v: number) => string; zeroOk?: boolean }[] = [
+    ...(isBuyer ? [
+      { label: 'Закупівель (замовник)',    va: a.as_buyer_tenders_count,    vb: b.as_buyer_tenders_count,    higherIsBetter: true,  fmt: fmtNumber },
+      { label: 'Сума закупівель',         va: a.as_buyer_total_amount,     vb: b.as_buyer_total_amount,     higherIsBetter: true,  fmt: fmtAmount },
+      { label: 'Конкуренція (уч./тендер)',va: a.as_buyer_avg_bids,         vb: b.as_buyer_avg_bids,         higherIsBetter: true,  fmt: (v: number) => v.toFixed(1) },
+    ] : []),
+    { label: 'Участь у тендерах',        va: a.as_supplier_bids_count,    vb: b.as_supplier_bids_count,    higherIsBetter: true,  fmt: fmtNumber },
+    { label: 'Перемог (постачальник)',   va: a.as_supplier_tenders_count, vb: b.as_supplier_tenders_count, higherIsBetter: true,  fmt: fmtNumber },
+    { label: 'Сума перемог',             va: a.as_supplier_total_amount,  vb: b.as_supplier_total_amount,  higherIsBetter: true,  fmt: fmtAmount },
+    { label: 'Win rate',                va: winRate(a),                  vb: winRate(b),                  higherIsBetter: true,  fmt: v => `${v.toFixed(1)}%`, zeroOk: true },
+    { label: 'Ризик-скор',              va: a.risk_score,                vb: b.risk_score,                higherIsBetter: false, fmt: v => v.toFixed(2),       zeroOk: true },
+    { label: 'Red flags',               va: a.active_flags_count,        vb: b.active_flags_count,        higherIsBetter: false, fmt: fmtNumber,               zeroOk: true },
   ]
 
   return (
@@ -165,6 +171,16 @@ function CompareTable({ a, b }: { a: CompanyProfile; b: CompanyProfile }) {
             <td className="px-4 py-2 text-sm text-white text-right">{b.region ?? '—'}</td>
           </tr>
           <tr className="border-t border-border bg-white/[0.01]">
+            <td className="px-4 py-2 text-xs text-muted">Статус</td>
+            <td className="px-4 py-2 text-sm text-white text-right">{a.status ?? '—'}</td>
+            <td className="px-4 py-2 text-sm text-white text-right">{b.status ?? '—'}</td>
+          </tr>
+          <tr className="border-t border-border bg-white/[0.01]">
+            <td className="px-4 py-2 text-xs text-muted">Реєстрація</td>
+            <td className="px-4 py-2 text-sm text-white text-right">{a.registration_date ? a.registration_date.slice(0, 10) : '—'}</td>
+            <td className="px-4 py-2 text-sm text-white text-right">{b.registration_date ? b.registration_date.slice(0, 10) : '—'}</td>
+          </tr>
+          <tr className="border-t border-border bg-white/[0.01]">
             <td className="px-4 py-2 text-xs text-muted">Ризик-рівень</td>
             <td className="px-4 py-2 text-right"><div className="flex justify-end"><RiskBadge level={a.risk_level} size="sm" /></div></td>
             <td className="px-4 py-2 text-right"><div className="flex justify-end"><RiskBadge level={b.risk_level} size="sm" /></div></td>
@@ -177,8 +193,9 @@ function CompareTable({ a, b }: { a: CompanyProfile; b: CompanyProfile }) {
               label={r.label}
               a={r.va}
               b={r.vb}
-              winner={r.va === 0 && r.vb === 0 ? null : better(r.va, r.vb, r.higherIsBetter)}
+              winner={r.va === 0 && r.vb === 0 && !r.zeroOk ? null : better(r.va, r.vb, r.higherIsBetter)}
               format={r.fmt}
+              zeroOk={r.zeroOk}
             />
           ))}
         </tbody>
