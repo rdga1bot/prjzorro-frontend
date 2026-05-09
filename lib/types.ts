@@ -129,6 +129,23 @@ export interface NetworkData {
   total_nodes: number
 }
 
+export interface RelatedTender {
+  tender_id:               string
+  title:                   string
+  value_amount:            number | null
+  date_created:            string | null
+  status:                  string
+  procuring_entity_name:   string
+  procuring_entity_edrpou: string
+  supplier_name:           string | null
+  supplier_edrpou:         string | null
+}
+
+export interface RelatedTendersResponse {
+  items: RelatedTender[]
+  total: number
+}
+
 export interface DashboardStats {
   total_tenders:     number
   total_amount_uah:  number

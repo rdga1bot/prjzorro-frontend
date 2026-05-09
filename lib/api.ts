@@ -1,6 +1,6 @@
 import type {
   TenderListItem, TenderDetail, PaginatedResponse,
-  CompanyProfile, NetworkData, DashboardStats, BenchmarkData,
+  CompanyProfile, NetworkData, DashboardStats, BenchmarkData, RelatedTendersResponse,
 } from './types'
 
 export interface AlertCreate {
@@ -129,6 +129,9 @@ export const api = {
 
     benchmark: (id: string) =>
       apiFetch<BenchmarkData>(`/api/v1/tenders/${id}/benchmark`),
+
+    related: (id: string, limit = 10) =>
+      apiFetch<RelatedTendersResponse>(`/api/v1/tenders/${id}/related?limit=${limit}`),
   },
 
   companies: {

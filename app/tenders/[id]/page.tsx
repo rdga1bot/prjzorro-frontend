@@ -1,9 +1,9 @@
 import { api, fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS, type SpendingData } from '@/lib/api'
-import type { BenchmarkData } from '@/lib/types'
+import type { BenchmarkData, RelatedTender, RelatedTendersResponse } from '@/lib/types'
 import RiskBadge from '@/components/RiskBadge'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { AlertTriangle, Users, Building2, TrendingUp } from 'lucide-react'
+import { AlertTriangle, Users, Building2, TrendingUp, GitBranch } from 'lucide-react'
 
 export const revalidate = 300
 
@@ -77,6 +77,40 @@ function BenchmarkSection({ b }: { b: BenchmarkData }) {
           <span>{fmtAmount(max)}</span>
         </div>
       </div>
+    </div>
+  )
+}
+
+function RelatedTendersSection({ data }: { data: RelatedTendersResponse }) {
+  if (data.total === 0) return null
+  return (
+    <div className="space-y-2">
+      {data.items.map(r => (
+        <div key={r.tender_id} className="flex items-start justify-between gap-4 rounded-lg border border-border p-3 hover:border-border/80">
+          <div className="min-w-0 space-y-1">
+            <Link href={`/tenders/${r.tender_id}`}
+              className="text-sm text-white hover:text-accent line-clamp-2 block">
+              {r.title}
+            </Link>
+            <p className="text-xs text-muted">
+              <Link href={`/companies/${r.procuring_entity_edrpou}`} className="hover:text-white">
+                {r.procuring_entity_name ?? r.procuring_entity_edrpou}
+              </Link>
+              {r.supplier_name && (
+                <> · Переможець:{' '}
+                  <Link href={`/companies/${r.supplier_edrpou}`} className="text-risk-low hover:underline">
+                    {r.supplier_name}
+                  </Link>
+                </>
+              )}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-mono text-sm text-white">{fmtAmount(r.value_amount)}</p>
+            <p className="text-xs text-muted">{fmtDate(r.date_created)}</p>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -160,11 +194,13 @@ export default async function TenderPage({ params }: Props) {
   let tender
   let spending: SpendingData | null = null
   let benchmark: BenchmarkData | null = null
+  let related: RelatedTendersResponse | null = null
   try {
-    ;[tender, spending, benchmark] = await Promise.all([
+    ;[tender, spending, benchmark, related] = await Promise.all([
       api.tenders.get(params.id),
       api.tenders.spending(params.id).catch(() => null),
       api.tenders.benchmark(params.id).catch(() => null),
+      api.tenders.related(params.id).catch(() => null),
     ])
   } catch {
     notFound()
@@ -268,6 +304,13 @@ export default async function TenderPage({ params }: Props) {
       {benchmark && benchmark.count > 0 && (
         <Section title="Ціновий бенчмарк">
           <BenchmarkSection b={benchmark} />
+        </Section>
+      )}
+
+      {/* Схожі тендери в інших замовників */}
+      {related && related.total > 0 && (
+        <Section title={`Схожі тендери в інших замовників (${related.total})`}>
+          <RelatedTendersSection data={related} />
         </Section>
       )}
 
