@@ -27,8 +27,10 @@ const BASE = typeof window === 'undefined'
   : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000')
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const method = (init?.method ?? 'GET').toUpperCase()
+  const hasBody = method !== 'GET' && method !== 'DELETE'
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: hasBody ? { 'Content-Type': 'application/json' } : {},
     ...init,
   })
   if (!res.ok) {
@@ -116,7 +118,7 @@ export interface SpendingData {
 export const api = {
   tenders: {
     list: (f: TenderFilters = {}) =>
-      apiFetch<PaginatedResponse<TenderListItem>>(`/api/v1/tenders/${buildQuery(f)}`),
+      apiFetch<PaginatedResponse<TenderListItem>>(`/api/v1/tenders${buildQuery(f)}`),
 
     get: (id: string) =>
       apiFetch<TenderDetail>(`/api/v1/tenders/${id}`),
@@ -159,7 +161,7 @@ export const api = {
   search: {
     query: (q: string, type = 'all', page = 1) =>
       apiFetch<{ tenders: TenderListItem[]; companies: CompanyProfile[]; total: number }>(
-        `/api/v1/search/${buildQuery({ q, type, page })}`
+        `/api/v1/search${buildQuery({ q, type, page })}`
       ),
     autocomplete: (q: string) =>
       apiFetch<Array<{ id: string; name?: string; title?: string; type: string }>>(
@@ -169,9 +171,9 @@ export const api = {
 
   alerts: {
     list: (email: string) =>
-      apiFetch<AlertOut[]>(`/api/v1/alerts/${buildQuery({ email })}`),
+      apiFetch<AlertOut[]>(`/api/v1/alerts${buildQuery({ email })}`),
     create: (data: AlertCreate) =>
-      apiFetch<AlertOut>('/api/v1/alerts/', { method: 'POST', body: JSON.stringify(data) }),
+      apiFetch<AlertOut>('/api/v1/alerts', { method: 'POST', body: JSON.stringify(data) }),
     delete: (id: string) =>
       apiFetch<void>(`/api/v1/alerts/${id}`, { method: 'DELETE' }),
   },
