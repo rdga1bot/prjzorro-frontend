@@ -150,14 +150,14 @@ function CompareTable({ a, b }: { a: CompanyProfile; b: CompanyProfile }) {
           <tr className="border-b border-border bg-white/[0.02]">
             <th className="px-4 py-3 text-left text-xs text-muted w-40">Метрика</th>
             <th className="px-4 py-3 text-right">
-              <Link href={`/companies/${a.edrpou}`} className="text-sm font-semibold text-accent hover:underline block truncate max-w-[200px] ml-auto">
-                {a.name}
+              <Link href={`/companies/${a.edrpou}`} className="text-sm font-semibold text-accent hover:underline block truncate ml-auto" title={a.name}>
+                {a.name_short ?? a.name}
               </Link>
               <span className="text-xs text-muted font-normal">{a.edrpou}</span>
             </th>
             <th className="px-4 py-3 text-right">
-              <Link href={`/companies/${b.edrpou}`} className="text-sm font-semibold text-accent hover:underline block truncate max-w-[200px] ml-auto">
-                {b.name}
+              <Link href={`/companies/${b.edrpou}`} className="text-sm font-semibold text-accent hover:underline block truncate ml-auto" title={b.name}>
+                {b.name_short ?? b.name}
               </Link>
               <span className="text-xs text-muted font-normal">{b.edrpou}</span>
             </th>
