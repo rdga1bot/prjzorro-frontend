@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import type { NetworkData, NetworkNode, NetworkEdge } from '@/lib/types'
+import { abbreviateUaName } from '@/lib/uaName'
 
 interface Props {
   data:      NetworkData
@@ -85,18 +86,19 @@ export default function CompanyNetwork({ data, onSelect }: Props) {
         .attr('stroke', d => d.risk_level ? RISK_COLORS[d.risk_level as keyof typeof RISK_COLORS] : '#475569')
         .attr('stroke-width', d => d.risk_level && d.risk_level !== 'low' ? 2.5 : 1)
 
-      // Мітки тільки якщо вузлів небагато — при >60 вони перекриваються
-      if (data.nodes.length <= 60) {
-        node.append('text')
-          .text(d => d.label.length > 18 ? d.label.slice(0, 16) + '…' : d.label)
-          .attr('dy', d => sizeScale(d.amount) + 11)
-          .attr('text-anchor', 'middle')
-          .attr('font-size', 10)
-          .attr('fill', '#94a3b8')
-          .style('pointer-events', 'none')
-      }
+      const labelFontSize = data.nodes.length > 60 ? 9 : 10
+      node.append('text')
+        .text(d => {
+          const s = abbreviateUaName(d.label)
+          return s.length > 22 ? s.slice(0, 20) + '…' : s
+        })
+        .attr('dy', d => sizeScale(d.amount) + 11)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', labelFontSize)
+        .attr('fill', '#94a3b8')
+        .style('pointer-events', 'none')
 
-      node.append('title').text(d => `${d.label}\nЄДРПОУ: ${d.id}`)
+      node.append('title').text(d => `${abbreviateUaName(d.label)}\nЄДРПОУ: ${d.id}`)
 
       simulation.on('tick', () => {
         link

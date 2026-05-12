@@ -2,6 +2,7 @@
 import { memo } from 'react'
 import Link from 'next/link'
 import { fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS } from '@/lib/api'
+import { abbreviateUaName } from '@/lib/uaName'
 import type { TenderListItem } from '@/lib/types'
 import RiskBadge from './RiskBadge'
 import { ChevronUp, ChevronDown } from 'lucide-react'
@@ -95,7 +96,7 @@ function TenderTable({
                       </p>
                       {t.procuring_entity_name && (
                         <p className="mt-0.5 text-xs text-muted truncate">
-                          {t.procuring_entity_name}
+                          {abbreviateUaName(t.procuring_entity_name)}
                           {t.procuring_entity_region && ` · ${t.procuring_entity_region}`}
                         </p>
                       )}

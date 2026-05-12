@@ -2,6 +2,7 @@
 import { memo } from 'react'
 import Link from 'next/link'
 import { fmtAmount, fmtNumber } from '@/lib/api'
+import { abbreviateUaName } from '@/lib/uaName'
 
 export interface RiskLeaderRow {
   edrpou:          string
@@ -65,7 +66,7 @@ function RiskLeaderTable({ rows, role }: Props) {
                 href={role === 'buyer' ? `/tenders?buyer_edrpou=${r.edrpou}` : `/companies/${r.edrpou}`}
                 className="block truncate font-medium text-white hover:text-accent transition-colors"
               >
-                {r.name || r.edrpou}
+                {r.name ? abbreviateUaName(r.name) : r.edrpou}
               </Link>
               <span className="block truncate text-xs text-muted">{r.edrpou}</span>
             </div>
