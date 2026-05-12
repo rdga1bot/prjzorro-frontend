@@ -40,9 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <NavLink href="/analytics">Аналітика</NavLink>
               <NavLink href="/risky">Топ ризиків</NavLink>
               <NavLink href="/hromada">Громади</NavLink>
-              <NavLink href="/alerts">Сповіщення</NavLink>
               <NavLink href="/webhooks">Вебхуки</NavLink>
               <NavLink href="/orgs">Організації</NavLink>
+              <NavLink href="/alerts">Сповіщення</NavLink>
               <NavLink href="/api-keys">API</NavLink>
             </nav>
             <AuthNav />
