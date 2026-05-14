@@ -63,7 +63,8 @@ function RiskLeaderTable({ rows, role }: Props) {
             <div className="w-8 shrink-0 px-3 text-xs text-muted">{index + 1}</div>
             <div className="flex-1 min-w-0 overflow-hidden px-2 py-2">
               <Link
-                href={role === 'buyer' ? `/tenders?buyer_edrpou=${r.edrpou}` : `/companies/${r.edrpou}`}
+                href={`/companies/${r.edrpou}`}
+                title={r.name ?? r.edrpou}
                 className="block truncate font-medium text-white hover:text-accent transition-colors"
               >
                 {r.name ? abbreviateUaName(r.name) : r.edrpou}

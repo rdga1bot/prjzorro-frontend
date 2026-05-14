@@ -80,7 +80,7 @@ export default async function AnalyticsPage() {
                 <tr key={b.edrpou} className="border-t border-border hover:bg-white/5">
                   <td className="px-4 py-2.5 text-muted text-xs">{i + 1}</td>
                   <td className="px-4 py-2.5">
-                    <Link href={`/companies/${b.edrpou}`} className="text-white hover:text-accent truncate block max-w-[200px]">
+                    <Link href={`/companies/${b.edrpou}`} title={b.name} className="text-white hover:text-accent truncate block max-w-[200px]">
                       {b.name}
                     </Link>
                     <span className="text-xs text-muted">{b.tenders_count} тендерів</span>
@@ -112,7 +112,7 @@ export default async function AnalyticsPage() {
                 <tr key={s.edrpou} className="border-t border-border hover:bg-white/5">
                   <td className="px-4 py-2.5 text-muted text-xs">{i + 1}</td>
                   <td className="px-4 py-2.5">
-                    <Link href={`/companies/${s.edrpou}`} className="text-white hover:text-accent truncate block max-w-[200px]">
+                    <Link href={`/companies/${s.edrpou}`} title={s.name} className="text-white hover:text-accent truncate block max-w-[200px]">
                       {s.name}
                     </Link>
                     <span className="text-xs text-muted">{s.tenders_count} перемог</span>
