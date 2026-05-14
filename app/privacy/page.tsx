@@ -109,7 +109,7 @@ export default function PrivacyPage() {
         <ul className="list-inside list-disc space-y-1 text-muted">
           <li>Паролі — bcrypt (cost 12), у базі тільки хеш.</li>
           <li>JWT — HS256, TTL 30 хв., jti blacklist у Redis.</li>
-          <li>HTTPS — обов'язковий для prod (Nginx TLS termination).</li>
+          <li>HTTPS — обов&apos;язковий для prod (Nginx TLS termination).</li>
           <li>Rate limiting — 60 запитів/хв. на API endpoint.</li>
         </ul>
       </Section>
@@ -117,7 +117,7 @@ export default function PrivacyPage() {
       <Section title="7. Файли cookies">
         <p className="text-muted">
           Сервіс не використовує cookies для ідентифікації або реклами. JWT-токен зберігається у
-          пам'яті браузера (localStorage) виключно для авторизації.
+          пам&apos;яті браузера (localStorage) виключно для авторизації.
         </p>
       </Section>
 
