@@ -1,5 +1,6 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useCallback, useMemo, Suspense } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { api, exportUrl, FLAG_LABELS, PROCEDURE_LABELS } from '@/lib/api'
 import type { TenderFilters } from '@/lib/api'
@@ -48,11 +49,57 @@ function SelectInput({ label, value, options, labels, onChange }: {
   )
 }
 
-export default function TendersPage() {
-  const [filters, setFilters] = useState<TenderFilters>({
-    page: 1, per_page: 20, sort_by: 'date_created', sort_order: 'desc',
-  })
-  const [showFilters, setShowFilters] = useState(false)
+function TendersPageContent() {
+  const router      = useRouter()
+  const pathname    = usePathname()
+  const searchParams = useSearchParams()
+
+  // ── Читаємо фільтри з URL ──────────────────────────────────
+  const filters = useMemo<TenderFilters>(() => {
+    const s  = (k: string) => searchParams.get(k) || undefined
+    const n  = (k: string) => searchParams.get(k) ? Number(searchParams.get(k)) : undefined
+    return {
+      page:               Number(searchParams.get('page')) || 1,
+      per_page:           20,
+      sort_by:            searchParams.get('sort_by') || 'date_created',
+      sort_order:         (searchParams.get('sort_order') as 'asc' | 'desc') || 'desc',
+      status:             s('status'),
+      risk_level:         s('risk_level'),
+      procedure_type:     s('procedure_type'),
+      flag_type:          s('flag_type'),
+      region:             s('region'),
+      buyer_name:         s('buyer_name'),
+      buyer_edrpou:       s('buyer_edrpou'),
+      participant_edrpou: s('participant_edrpou'),
+      amount_min:         n('amount_min'),
+      amount_max:         n('amount_max'),
+      cpv_code:           s('cpv_code'),
+      date_from:          s('date_from'),
+      date_to:            s('date_to'),
+    }
+  }, [searchParams])
+
+  // ── Оновлюємо URL (не state) ───────────────────────────────
+  const push = useCallback((patch: Partial<TenderFilters>, resetPage = true) => {
+    const next = new URLSearchParams(searchParams.toString())
+    for (const [k, v] of Object.entries(patch)) {
+      if (v !== undefined && v !== null && v !== '') next.set(k, String(v))
+      else next.delete(k)
+    }
+    if (resetPage) next.set('page', '1')
+    router.push(`${pathname}?${next.toString()}`, { scroll: false })
+  }, [router, pathname, searchParams])
+
+  const handleSort = useCallback((col: string) => {
+    push({
+      sort_by:    col,
+      sort_order: filters.sort_by === col && filters.sort_order === 'desc' ? 'asc' : 'desc',
+    }, false)
+  }, [push, filters.sort_by, filters.sort_order])
+
+  const resetFilters = useCallback(() => {
+    router.push(pathname, { scroll: false })
+  }, [router, pathname])
 
   const { data, isLoading } = useSWR(
     ['tenders', filters],
@@ -60,23 +107,19 @@ export default function TendersPage() {
     { keepPreviousData: true },
   )
 
-  const set = useCallback((patch: Partial<TenderFilters>) => {
-    setFilters(prev => ({ ...prev, ...patch, page: 1 }))
-  }, [])
-
-  const handleSort = (col: string) => {
-    setFilters(prev => ({
-      ...prev,
-      sort_by:    col,
-      sort_order: prev.sort_by === col && prev.sort_order === 'desc' ? 'asc' : 'desc',
-    }))
-  }
-
   const activeFilterCount = [
     filters.status, filters.risk_level, filters.flag_type, filters.procedure_type,
     filters.region, filters.buyer_name, filters.buyer_edrpou, filters.participant_edrpou,
     filters.amount_min, filters.amount_max, filters.cpv_code, filters.date_from, filters.date_to,
   ].filter(Boolean).length
+
+  const showFilters = searchParams.get('filters') === '1'
+  const toggleFilters = () => {
+    const next = new URLSearchParams(searchParams.toString())
+    if (showFilters) next.delete('filters')
+    else next.set('filters', '1')
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false })
+  }
 
   return (
     <div className="space-y-5">
@@ -109,7 +152,7 @@ export default function TendersPage() {
           <SearchBar placeholder="Пошук по назві, ЄДРПОУ..." />
         </div>
         <button
-          onClick={() => setShowFilters(s => !s)}
+          onClick={toggleFilters}
           className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm transition-colors
             ${showFilters ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-card text-muted hover:text-white'}`}
         >
@@ -124,65 +167,65 @@ export default function TendersPage() {
       {/* Filters panel */}
       {showFilters && (
         <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-          {/* Row 1: Замовник + Учасник + ЄДРПОУ замовника */}
+          {/* Row 1 */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <TextInput
               label="Замовник (назва)"
               value={filters.buyer_name ?? ''}
-              onChange={v => set({ buyer_name: v || undefined })}
+              onChange={v => push({ buyer_name: v || undefined })}
               placeholder="Міністерство..."
             />
             <TextInput
               label="ЄДРПОУ замовника"
               value={filters.buyer_edrpou ?? ''}
-              onChange={v => set({ buyer_edrpou: v || undefined })}
+              onChange={v => push({ buyer_edrpou: v || undefined })}
               placeholder="12345678"
             />
             <TextInput
               label="ЄДРПОУ учасника"
               value={filters.participant_edrpou ?? ''}
-              onChange={v => set({ participant_edrpou: v || undefined })}
+              onChange={v => push({ participant_edrpou: v || undefined })}
               placeholder="ЄДРПОУ постачальника/учасника"
             />
           </div>
 
-          {/* Row 2: Процедура + Статус + Регіон + CPV */}
+          {/* Row 2 */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <SelectInput label="Вид закупівлі"  value={filters.procedure_type ?? ''} options={PROCEDURE_OPTIONS} labels={PROCEDURE_LABELS} onChange={v => set({ procedure_type: v || undefined })} />
-            <SelectInput label="Статус"          value={filters.status ?? ''}         options={STATUS_OPTIONS}    labels={STATUS_LABELS}    onChange={v => set({ status: v || undefined })} />
-            <TextInput   label="Регіон"          value={filters.region ?? ''}         onChange={v => set({ region: v || undefined })}         placeholder="Київ" />
-            <TextInput   label="ДК021:2015 (CPV)" value={filters.cpv_code ?? ''}      onChange={v => set({ cpv_code: v || undefined })}       placeholder="45000000" />
+            <SelectInput label="Вид закупівлі"   value={filters.procedure_type ?? ''} options={PROCEDURE_OPTIONS} labels={PROCEDURE_LABELS} onChange={v => push({ procedure_type: v || undefined })} />
+            <SelectInput label="Статус"           value={filters.status ?? ''}         options={STATUS_OPTIONS}    labels={STATUS_LABELS}    onChange={v => push({ status: v || undefined })} />
+            <TextInput   label="Регіон"           value={filters.region ?? ''}         onChange={v => push({ region: v || undefined })}         placeholder="Київ" />
+            <TextInput   label="ДК021:2015 (CPV)" value={filters.cpv_code ?? ''}      onChange={v => push({ cpv_code: v || undefined })}       placeholder="45000000" />
           </div>
 
-          {/* Row 3: Ризик + Флаг + Сума + Дати */}
+          {/* Row 3 */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            <SelectInput label="Рівень ризику" value={filters.risk_level ?? ''} options={RISK_OPTIONS} labels={RISK_LABELS} onChange={v => set({ risk_level: v || undefined })} />
-            <SelectInput label="Тип порушення" value={filters.flag_type ?? ''}  options={FLAG_OPTIONS} labels={FLAG_LABELS} onChange={v => set({ flag_type: v || undefined })} />
+            <SelectInput label="Рівень ризику" value={filters.risk_level ?? ''} options={RISK_OPTIONS} labels={RISK_LABELS} onChange={v => push({ risk_level: v || undefined })} />
+            <SelectInput label="Тип порушення" value={filters.flag_type ?? ''}  options={FLAG_OPTIONS} labels={FLAG_LABELS} onChange={v => push({ flag_type: v || undefined })} />
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted">Сума від (UAH)</label>
-              <input type="number" value={filters.amount_min ?? ''} onChange={e => set({ amount_min: e.target.value ? Number(e.target.value) : undefined })} placeholder="0"
+              <input type="number" value={filters.amount_min ?? ''} onChange={e => push({ amount_min: e.target.value ? Number(e.target.value) : undefined })} placeholder="0"
                 className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white focus:border-accent outline-none placeholder:text-muted" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted">Сума до (UAH)</label>
-              <input type="number" value={filters.amount_max ?? ''} onChange={e => set({ amount_max: e.target.value ? Number(e.target.value) : undefined })} placeholder="∞"
+              <input type="number" value={filters.amount_max ?? ''} onChange={e => push({ amount_max: e.target.value ? Number(e.target.value) : undefined })} placeholder="∞"
                 className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white focus:border-accent outline-none placeholder:text-muted" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted">Дата від</label>
-              <input type="date" value={filters.date_from ?? ''} onChange={e => set({ date_from: e.target.value || undefined })}
+              <input type="date" value={filters.date_from ?? ''} onChange={e => push({ date_from: e.target.value || undefined })}
                 className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white focus:border-accent outline-none" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted">Дата до</label>
-              <input type="date" value={filters.date_to ?? ''} onChange={e => set({ date_to: e.target.value || undefined })}
+              <input type="date" value={filters.date_to ?? ''} onChange={e => push({ date_to: e.target.value || undefined })}
                 className="rounded-lg border border-border bg-bg px-3 py-2 text-sm text-white focus:border-accent outline-none" />
             </div>
           </div>
 
           {activeFilterCount > 0 && (
             <button
-              onClick={() => setFilters({ page: 1, per_page: 20, sort_by: 'date_created', sort_order: 'desc' })}
+              onClick={resetFilters}
               className="flex items-center gap-1.5 text-sm text-muted hover:text-white"
             >
               <X size={14} /> Скинути всі фільтри ({activeFilterCount})
@@ -199,10 +242,18 @@ export default function TendersPage() {
         pages={data?.pages ?? 0}
         sortBy={filters.sort_by}
         sortOrder={filters.sort_order}
-        onPageChange={p => setFilters(f => ({ ...f, page: p }))}
+        onPageChange={p => push({ page: p }, false)}
         onSort={handleSort}
         loading={isLoading}
       />
     </div>
+  )
+}
+
+export default function TendersPage() {
+  return (
+    <Suspense>
+      <TendersPageContent />
+    </Suspense>
   )
 }

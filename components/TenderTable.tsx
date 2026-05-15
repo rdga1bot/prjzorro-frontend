@@ -1,7 +1,7 @@
 'use client'
 import { memo } from 'react'
 import Link from 'next/link'
-import { fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS } from '@/lib/api'
+import { fmtAmount, fmtDate, PROCEDURE_LABELS } from '@/lib/api'
 import { abbreviateUaName } from '@/lib/uaName'
 import type { TenderListItem } from '@/lib/types'
 import RiskBadge from './RiskBadge'
@@ -21,12 +21,12 @@ interface Props {
 }
 
 const COLS = [
-  { key: 'title',         label: 'Тендер',       sortable: false,  width: '' },
-  { key: 'value_amount',  label: 'Сума',          sortable: true,   width: 'w-36 shrink-0' },
-  { key: 'procedure',     label: 'Процедура',     sortable: false,  width: 'w-48 shrink-0' },
-  { key: 'bids_count',    label: 'Учасн.',        sortable: false,  width: 'w-20 shrink-0' },
-  { key: 'risk_level',    label: 'Ризик',         sortable: false,  width: 'w-32 shrink-0' },
-  { key: 'date_created',  label: 'Дата',          sortable: true,   width: 'w-28 shrink-0' },
+  { key: 'title',         label: 'Тендер',    sortable: false, width: '' },
+  { key: 'value_amount',  label: 'Сума',       sortable: true,  width: 'w-36 shrink-0' },
+  { key: 'procedure',     label: 'Процедура',  sortable: false, width: 'w-48 shrink-0' },
+  { key: 'bids_count',    label: 'Учасн.',     sortable: false, width: 'w-20 shrink-0' },
+  { key: 'risk_level',    label: 'Ризик',      sortable: false, width: 'w-32 shrink-0' },
+  { key: 'date_created',  label: 'Дата',       sortable: true,  width: 'w-28 shrink-0' },
 ]
 
 function SkeletonRow() {
@@ -38,6 +38,18 @@ function SkeletonRow() {
         </td>
       ))}
     </tr>
+  )
+}
+
+// Прозорий Link який заповнює клітинку — кожна td клікабельна як anchor.
+// Це гарантує SPA-навігацію (не повне перезавантаження) і роботу Ctrl+клік.
+function CellLink({ href, children, className = '' }: {
+  href: string; children: React.ReactNode; className?: string
+}) {
+  return (
+    <Link href={href} className={`block h-full w-full ${className}`} tabIndex={-1} prefetch={false}>
+      {children}
+    </Link>
   )
 }
 
@@ -84,50 +96,61 @@ function TenderTable({
           <tbody>
             {loading
               ? Array.from({ length: perPage }).map((_, i) => <SkeletonRow key={i} />)
-              : items.map(t => (
-                <tr
-                  key={t.id}
-                  className="border-t border-border hover:bg-white/5 transition-colors cursor-pointer"
-                  onClick={() => { window.location.href = `/tenders/${t.tender_id}` }}
-                >
-                  <td className="px-4 py-3 min-w-0">
-                    <Link
-                      href={`/tenders/${t.tender_id}`}
-                      className="block"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <p className="line-clamp-2 font-medium hover:text-accent transition-colors">
-                        {t.title}
-                      </p>
-                      {t.procuring_entity_name && (
-                        <p className="mt-0.5 text-xs text-muted truncate">
-                          {abbreviateUaName(t.procuring_entity_name)}
-                          {t.procuring_entity_region && ` · ${t.procuring_entity_region}`}
+              : items.map(t => {
+                const href = `/tenders/${t.tender_id}`
+                return (
+                  <tr
+                    key={t.id}
+                    className="border-t border-border hover:bg-white/5 transition-colors"
+                  >
+                    {/* Перша клітинка — назва + замовник, основний Link з prefetch */}
+                    <td className="px-4 py-3 min-w-0">
+                      <Link href={href} className="block">
+                        <p className="line-clamp-2 font-medium hover:text-accent transition-colors">
+                          {t.title}
                         </p>
-                      )}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-sm">
-                    {fmtAmount(t.value_amount, t.value_currency)}
-                  </td>
-                  <td className="px-4 py-3 text-muted text-xs">
-                    <span className="line-clamp-2">
-                      {PROCEDURE_LABELS[t.procedure_type ?? ''] ?? t.procedure_type ?? '—'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={t.bids_count === 1 ? 'text-risk-high font-bold' : ''}>
-                      {t.bids_count}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 overflow-hidden">
-                    <RiskBadge level={t.risk_level} size="sm" />
-                  </td>
-                  <td className="px-4 py-3 text-muted text-xs">
-                    {fmtDate(t.date_created)}
-                  </td>
-                </tr>
-              ))}
+                        {t.procuring_entity_name && (
+                          <p className="mt-0.5 text-xs text-muted truncate">
+                            {abbreviateUaName(t.procuring_entity_name)}
+                            {t.procuring_entity_region && ` · ${t.procuring_entity_region}`}
+                          </p>
+                        )}
+                      </Link>
+                    </td>
+
+                    {/* Решта клітинок — CellLink без prefetch */}
+                    <td className="px-4 py-3 font-mono text-sm">
+                      <CellLink href={href}>
+                        {fmtAmount(t.value_amount, t.value_currency)}
+                      </CellLink>
+                    </td>
+                    <td className="px-4 py-3 text-muted text-xs">
+                      <CellLink href={href}>
+                        <span className="line-clamp-2">
+                          {PROCEDURE_LABELS[t.procedure_type ?? ''] ?? t.procedure_type ?? '—'}
+                        </span>
+                      </CellLink>
+                    </td>
+                    <td className="px-4 py-3">
+                      <CellLink href={href}>
+                        <span className={t.bids_count === 1 ? 'text-risk-high font-bold' : ''}>
+                          {t.bids_count}
+                        </span>
+                      </CellLink>
+                    </td>
+                    <td className="px-4 py-3 overflow-hidden">
+                      <CellLink href={href}>
+                        <RiskBadge level={t.risk_level} size="sm" />
+                      </CellLink>
+                    </td>
+                    <td className="px-4 py-3 text-muted text-xs">
+                      <CellLink href={href}>
+                        {fmtDate(t.date_created)}
+                      </CellLink>
+                    </td>
+                  </tr>
+                )
+              })}
 
             {!loading && items.length === 0 && (
               <tr>
