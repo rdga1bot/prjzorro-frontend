@@ -88,7 +88,7 @@ export default function OrgsPage() {
     e.preventDefault()
     setCreating(true); setCreateError('')
     try {
-      const res = await fetch(`${BASE}/api/v1/orgs/`, {
+      const res = await fetch(`${BASE}/api/v1/orgs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, slug, plan }),

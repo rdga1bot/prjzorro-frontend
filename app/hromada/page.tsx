@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 import dynamic from 'next/dynamic'
-import { MapPin, TrendingUp, Users, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react'
+import { MapPin, TrendingUp, Users, ChevronRight, ArrowLeft } from 'lucide-react'
 import { PROCEDURE_LABELS } from '@/lib/api'
 
 const BarChart = dynamic(() => import('@/components/charts/HromadaCharts').then(m => m.RegionBarChart), { ssr: false })
@@ -41,8 +42,11 @@ function RiskBadge({ label, count, color }: { label: string; count: number; colo
   )
 }
 
-export default function HromadaPage() {
-  const [selected, setSelected] = useState<string | null>(null)
+function HromadaPageInner() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const selected = searchParams.get('region')
+
   const [sortBy, setSortBy] = useState<'total_amount' | 'tender_count' | 'buyer_count' | 'avg_bids'>('total_amount')
 
   const { data: regions } = useSWR<RegionSummary[]>(
@@ -61,8 +65,16 @@ export default function HromadaPage() {
 
   const totalAmount = regions ? regions.reduce((s, r) => s + r.total_amount, 0) : 0
 
+  function selectRegion(region: string) {
+    router.push(`/hromada?region=${encodeURIComponent(region)}`)
+  }
+
+  function goBack() {
+    router.back()
+  }
+
   if (selected && detail) {
-    return <RegionDetailView detail={detail} onBack={() => setSelected(null)} />
+    return <RegionDetailView detail={detail} onBack={goBack} />
   }
 
   return (
@@ -88,7 +100,7 @@ export default function HromadaPage() {
       {regions && regions.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs text-muted mb-3">Витрати по регіонах (млн ₴)</p>
-          <BarChart data={sorted.slice(0, 20)} onSelect={setSelected} />
+          <BarChart data={sorted.slice(0, 20)} onSelect={selectRegion} />
         </div>
       )}
 
@@ -120,7 +132,7 @@ export default function HromadaPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {sorted.map(r => (
-            <button key={r.region} onClick={() => setSelected(r.region)}
+            <button key={r.region} onClick={() => selectRegion(r.region)}
               className="text-left rounded-xl border border-border bg-card p-4 hover:border-accent/50 transition-colors group space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-medium text-white group-hover:text-accent transition-colors leading-tight">
@@ -146,6 +158,14 @@ export default function HromadaPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function HromadaPage() {
+  return (
+    <Suspense>
+      <HromadaPageInner />
+    </Suspense>
   )
 }
 
