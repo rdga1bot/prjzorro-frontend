@@ -4,16 +4,12 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: [],
   },
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  },
   async rewrites() {
-    const apiUrl = process.env.API_URL || 'http://api:8000'
+    const apiCppUrl = process.env.API_URL    || 'http://api-cpp:8080'
+    const apiPyUrl  = process.env.API_PY_URL || 'http://api:8000'
     return [
-      {
-        source: '/api/v1/:path*',
-        destination: `${apiUrl}/api/v1/:path*`,
-      },
+      // All API → C++ (search now uses libcurl for Meilisearch, no Python needed)
+      { source: '/api/v1/:path*', destination: `${apiCppUrl}/api/v1/:path*` },
     ]
   },
 }

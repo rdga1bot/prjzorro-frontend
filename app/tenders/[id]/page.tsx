@@ -1,5 +1,5 @@
 import { api, fmtAmount, fmtDate, PROCEDURE_LABELS, STATUS_LABELS, type SpendingData } from '@/lib/api'
-import type { BenchmarkData, RelatedTender, RelatedTendersResponse } from '@/lib/types'
+import type { BenchmarkData, RelatedTender, RelatedTendersResponse, TenderItem } from '@/lib/types'
 import RiskBadge from '@/components/RiskBadge'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -85,8 +85,14 @@ function TimelineSection({ tender }: { tender: import('@/lib/types').TenderDetai
   const steps: { label: string; date: string | null | undefined; done: boolean }[] = [
     { label: 'Опубліковано',           date: tender.date_created,        done: !!tender.date_created },
     { label: 'Прийом пропозицій',      date: tender.tender_period_start, done: !!tender.tender_period_start },
-    { label: 'Кінець прийому',         date: tender.tender_period_end,   done: !!tender.tender_period_end },
-    { label: 'Кінець визначення',      date: tender.award_period_end,    done: !!tender.award_period_end },
+    { label: 'Кінець прийому',         date: tender.tender_period_end,        done: !!tender.tender_period_end },
+    { label: 'Аукціон',               date: tender.auction_period_start,
+      done: !!tender.auction_period_start || (
+        !!tender.award_period_end &&
+        !['negotiation', 'negotiation.quick', 'reporting'].includes(tender.procedure_type ?? '')
+      )
+    },
+    { label: 'Кваліфікація',          date: tender.award_period_end,         done: !!tender.award_period_end },
     {
       label: 'Переможець',
       date:  tender.awards.find(a => a.status === 'active')?.date ?? null,
@@ -311,6 +317,40 @@ export default async function TenderPage({ params }: Props) {
         </Section>
       )}
 
+      {/* Предмет закупівлі */}
+      {tender.items?.length > 0 && (
+        <Section title="Предмет закупівлі">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted">
+                  <th className="pb-2 pr-4 font-medium">ДК 021 / CPV</th>
+                  <th className="pb-2 pr-4 font-medium">Назва</th>
+                  <th className="pb-2 pr-4 font-medium text-right">К-сть</th>
+                  <th className="pb-2 font-medium text-right">Ціна за од.</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {tender.items.map((item: TenderItem, i: number) => (
+                  <tr key={i} className="text-white">
+                    <td className="py-2 pr-4 font-mono text-xs text-muted whitespace-nowrap">
+                      {item.dk_code || item.cpv_code || '—'}
+                    </td>
+                    <td className="py-2 pr-4">{item.dk_description || '—'}</td>
+                    <td className="py-2 pr-4 text-right whitespace-nowrap">
+                      {item.quantity != null ? `${item.quantity} ${item.unit ?? ''}`.trim() : '—'}
+                    </td>
+                    <td className="py-2 text-right whitespace-nowrap font-mono">
+                      {item.unit_value != null ? fmtAmount(item.unit_value) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      )}
+
       {/* Хронологія тендера */}
       <Section title="Хронологія">
         <TimelineSection tender={tender} />
@@ -370,9 +410,12 @@ export default async function TenderPage({ params }: Props) {
         <Section title={`Учасники (${tender.bids.length})`}>
           <div className="space-y-2">
             {tender.bids.map(bid => {
-              const isWinner = tender.awards.some(
-                a => a.supplier_edrpou === bid.bidder_edrpou && a.status === 'active'
-              )
+              const award    = tender.awards.find(a => a.supplier_edrpou === bid.bidder_edrpou)
+              const isWinner = award?.status === 'active'
+              const amount   = award?.value_amount ?? bid.value_amount
+              const awardLabel = award && !isWinner
+                ? (award.status === 'unsuccessful' ? 'Дискваліфіковано' : 'Скасовано')
+                : null
               return (
                 <div key={bid.id} className={`flex items-center justify-between rounded-lg p-3 border
                   ${isWinner ? 'border-risk-low/40 bg-risk-low/5' : 'border-border'}`}>
@@ -385,14 +428,15 @@ export default async function TenderPage({ params }: Props) {
                           </Link>
                         : <span className="text-sm text-white">{bid.bidder_name ?? '—'}</span>
                       }
-                      <p className="text-xs text-muted">
-                        {bid.status} · {fmtDate(bid.date)}
-                      </p>
+                      <p className="text-xs text-muted">{fmtDate(bid.date)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-sm text-white">{fmtAmount(bid.value_amount)}</p>
-                    {isWinner && <span className="text-xs text-risk-low">Переможець</span>}
+                    <p className="font-mono text-sm text-white">
+                      {amount != null ? fmtAmount(amount) : <span className="text-muted text-xs">не розкрито</span>}
+                    </p>
+                    {isWinner   && <span className="text-xs text-risk-low">Переможець</span>}
+                    {awardLabel && <span className="text-xs text-risk-high">{awardLabel}</span>}
                   </div>
                 </div>
               )

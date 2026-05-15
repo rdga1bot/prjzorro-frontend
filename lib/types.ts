@@ -56,12 +56,24 @@ export interface TenderListItem {
   date_modified?:           string
 }
 
+export interface TenderItem {
+  cpv_code?:       string
+  dk_code?:        string
+  dk_description?: string
+  quantity?:       number
+  unit?:           string
+  unit_value?:     number
+}
+
 export interface TenderDetail extends TenderListItem {
   procuring_entity_kind?:  string
   tender_period_start?:    string
   tender_period_end?:      string
+  auction_period_start?:   string
+  auction_period_end?:     string
   award_period_end?:       string
   value_vat_included:      boolean
+  items:                   TenderItem[]
   bids:                    Bid[]
   awards:                  Award[]
   risk_flags:              RiskFlag[]

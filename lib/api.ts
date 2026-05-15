@@ -22,9 +22,12 @@ export interface AlertOut {
   is_active: boolean; created_at: string
 }
 
+// Server-side: direct to C++ API (no hop through Next.js proxy).
+// Client-side: relative URL so Next.js rewrites handle routing,
+// including directing /search/* to the Python API (Meilisearch).
 const BASE = typeof window === 'undefined'
-  ? (process.env.API_URL ?? 'http://api:8000')
-  : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000')
+  ? (process.env.API_URL ?? 'http://api-cpp:8080')
+  : ''
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const method = (init?.method ?? 'GET').toUpperCase()
@@ -143,9 +146,9 @@ export const api = {
     network: (edrpou: string, depth = 1) =>
       apiFetch<NetworkData>(`/api/v1/companies/${edrpou}/network?depth=${depth}`),
 
-    tenders: (edrpou: string, role = 'both', page = 1, perPage = 20) =>
+    tenders: (edrpou: string, role = 'both', page = 1, perPage = 20, sortBy = 'date_created', sortOrder = 'desc') =>
       apiFetch<PaginatedResponse<TenderListItem>>(
-        `/api/v1/companies/${edrpou}/tenders?role=${role}&page=${page}&per_page=${perPage}`
+        `/api/v1/companies/${edrpou}/tenders?role=${role}&page=${page}&per_page=${perPage}&sort_by=${sortBy}&sort_order=${sortOrder}`
       ),
   },
 

@@ -1,17 +1,21 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import useSWR from 'swr'
 import { api, fmtAmount, fmtNumber, fmtDate } from '@/lib/api'
 import RiskBadge from '@/components/RiskBadge'
 import TenderTable from '@/components/TenderTable'
 import CompanyNetwork from '@/components/CompanyNetwork'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Building2, TrendingUp, ShoppingCart, Network, Landmark, ArrowLeftRight } from 'lucide-react'
 import Link from 'next/link'
 
 interface Props { params: { edrpou: string } }
 
 type Tab = 'buyer' | 'participant' | 'supplier' | 'network'
+
+function isValidTab(s: string | null): s is Tab {
+  return s === 'buyer' || s === 'participant' || s === 'supplier' || s === 'network'
+}
 
 function StatBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -24,9 +28,23 @@ function StatBox({ label, value, sub }: { label: string; value: string; sub?: st
 }
 
 export default function CompanyPage({ params }: Props) {
-  const [tab, setTab] = useState<Tab>('participant')
-  const [page, setPage] = useState(1)
-  const router          = useRouter()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const urlTab       = searchParams.get('tab')
+  const [tab,       setTab]       = useState<Tab>(isValidTab(urlTab) ? urlTab : 'participant')
+  const [page,      setPage]      = useState(1)
+  const [sortBy,    setSortBy]    = useState('date_created')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  const changeTab = useCallback((t: Tab) => {
+    setTab(t)
+    setPage(1)
+    setSortBy('date_created')
+    setSortOrder('desc')
+    const params2 = new URLSearchParams(searchParams.toString())
+    params2.set('tab', t)
+    router.replace(`?${params2.toString()}`, { scroll: false })
+  }, [router, searchParams])
 
   const { data: company, isLoading: loadingCompany } = useSWR(
     `company-${params.edrpou}`,
@@ -34,21 +52,31 @@ export default function CompanyPage({ params }: Props) {
   )
 
   const { data: tenders, isLoading: loadingTenders } = useSWR(
-    tab !== 'network' ? ['company-tenders', params.edrpou, tab, page] : null,
-    () => api.companies.tenders(params.edrpou, tab, page, 20),
+    tab !== 'network' ? ['company-tenders', params.edrpou, tab, page, sortBy, sortOrder] : null,
+    () => api.companies.tenders(params.edrpou, tab, page, 20, sortBy, sortOrder),
   )
+
+  const handleSort = (col: string) => {
+    if (col === sortBy) {
+      setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')
+    } else {
+      setSortBy(col)
+      setSortOrder('desc')
+    }
+    setPage(1)
+  }
 
   const { data: network, isLoading: loadingNetwork } = useSWR(
     tab === 'network' ? `network-${params.edrpou}` : null,
     () => api.companies.network(params.edrpou, 2),
   )
 
-  // Автоматично відкрити вкладку "Як замовник" для держорганів без ролі постачальника
+  // Автоматично відкрити вкладку "Як замовник" якщо URL не містить tab і компанія лише замовник
   useEffect(() => {
-    if (company && company.as_buyer_tenders_count > 0 && !company.as_supplier_bids_count) {
-      setTab('buyer')
+    if (company && company.as_buyer_tenders_count > 0 && !company.as_supplier_bids_count && !urlTab) {
+      changeTab('buyer')
     }
-  }, [company])
+  }, [company]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loadingCompany) {
     return (
@@ -193,7 +221,7 @@ export default function CompanyPage({ params }: Props) {
         {TABS.map(t => (
           <button
             key={t.key}
-            onClick={() => { setTab(t.key); setPage(1) }}
+            onClick={() => changeTab(t.key)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px
               ${tab === t.key
                 ? 'border-accent text-accent'
@@ -212,8 +240,10 @@ export default function CompanyPage({ params }: Props) {
           page={page}
           perPage={20}
           pages={tenders?.pages ?? 0}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
           onPageChange={setPage}
-          onSort={() => {}}
+          onSort={handleSort}
           loading={loadingTenders}
         />
       ) : (
