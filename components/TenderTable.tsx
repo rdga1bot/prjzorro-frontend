@@ -88,9 +88,14 @@ function TenderTable({
                 <tr
                   key={t.id}
                   className="border-t border-border hover:bg-white/5 transition-colors cursor-pointer"
+                  onClick={() => { window.location.href = `/tenders/${t.tender_id}` }}
                 >
                   <td className="px-4 py-3 min-w-0">
-                    <Link href={`/tenders/${t.tender_id}`} className="block">
+                    <Link
+                      href={`/tenders/${t.tender_id}`}
+                      className="block"
+                      onClick={e => e.stopPropagation()}
+                    >
                       <p className="line-clamp-2 font-medium hover:text-accent transition-colors">
                         {t.title}
                       </p>
