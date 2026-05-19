@@ -66,7 +66,9 @@ function TenderTable({
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
+        {/* Scroll hint: right fade visible on mobile */}
+        <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-l from-card to-transparent z-10 sm:hidden" />
         <table className="w-full min-w-[940px] table-fixed text-sm text-white">
           <colgroup>
             <col />

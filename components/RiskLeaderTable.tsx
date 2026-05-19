@@ -43,46 +43,48 @@ function RiskLeaderTable({ rows, role }: Props) {
 
   return (
     <div className="overflow-x-auto">
-      {/* Header */}
-      <div className="flex border-b border-border text-left text-xs font-medium text-muted">
-        <div className="w-8 shrink-0 px-3 py-2">#</div>
-        <div className="flex-1 px-2 py-2">Назва</div>
-        <div className="w-20 shrink-0 px-3 py-2 text-right">Тендерів</div>
-        <div className="w-20 shrink-0 px-3 py-2 text-right">Вис. ризик</div>
-        <div className="w-36 shrink-0 px-3 py-2">Серед. ризик</div>
-        <div className="w-32 shrink-0 px-3 py-2 text-right">Сума</div>
-      </div>
-      {/* Rows */}
-      <div style={{ maxHeight: listHeight, overflowY: rows.length > MAX_VISIBLE ? 'auto' : 'visible' }}>
-        {visible.map((r, index) => (
-          <div
-            key={r.edrpou}
-            style={{ height: ROW_HEIGHT }}
-            className="flex items-center border-t border-border hover:bg-white/5 transition-colors text-sm overflow-hidden"
-          >
-            <div className="w-8 shrink-0 px-3 text-xs text-muted">{index + 1}</div>
-            <div className="flex-1 min-w-0 overflow-hidden px-2 py-2">
-              <Link
-                href={`/companies/${r.edrpou}`}
-                title={r.name ?? r.edrpou}
-                className="block truncate font-medium text-white hover:text-accent transition-colors"
-              >
-                {r.name ? abbreviateUaName(r.name) : r.edrpou}
-              </Link>
-              <span className="block truncate text-xs text-muted">{r.edrpou}</span>
+      <div className="min-w-[520px]">
+        {/* Header */}
+        <div className="flex border-b border-border text-left text-xs font-medium text-muted">
+          <div className="w-8 shrink-0 px-3 py-2">#</div>
+          <div className="flex-1 px-2 py-2 min-w-[120px]">Назва</div>
+          <div className="w-16 shrink-0 px-2 py-2 text-right">Тенд.</div>
+          <div className="w-16 shrink-0 px-2 py-2 text-right">Вис.</div>
+          <div className="w-32 shrink-0 px-2 py-2">Ризик</div>
+          <div className="w-28 shrink-0 px-2 py-2 text-right">Сума</div>
+        </div>
+        {/* Rows */}
+        <div style={{ maxHeight: listHeight, overflowY: rows.length > MAX_VISIBLE ? 'auto' : 'visible' }}>
+          {visible.map((r, index) => (
+            <div
+              key={r.edrpou}
+              style={{ height: ROW_HEIGHT }}
+              className="flex items-center border-t border-border hover:bg-white/5 transition-colors text-sm"
+            >
+              <div className="w-8 shrink-0 px-3 text-xs text-muted">{index + 1}</div>
+              <div className="flex-1 min-w-[120px] overflow-hidden px-2 py-2">
+                <Link
+                  href={`/companies/${r.edrpou}`}
+                  title={r.name ?? r.edrpou}
+                  className="block truncate font-medium text-white hover:text-accent transition-colors"
+                >
+                  {r.name ? abbreviateUaName(r.name) : r.edrpou}
+                </Link>
+                <span className="block truncate text-xs text-muted">{r.edrpou}</span>
+              </div>
+              <div className="w-16 shrink-0 px-2 text-right text-muted">{fmtNumber(r.tender_count)}</div>
+              <div className="w-16 shrink-0 px-2 text-right font-medium text-risk-high">
+                {fmtNumber(r.high_risk_count)}
+              </div>
+              <div className="w-32 shrink-0 px-2">
+                <ScoreBar score={parseFloat(String(r.avg_risk_score))} />
+              </div>
+              <div className="w-28 shrink-0 px-2 text-right text-xs text-muted">
+                {fmtAmount(r.total_amount)}
+              </div>
             </div>
-            <div className="w-20 shrink-0 px-3 text-right text-muted">{fmtNumber(r.tender_count)}</div>
-            <div className="w-20 shrink-0 px-3 text-right font-medium text-risk-high">
-              {fmtNumber(r.high_risk_count)}
-            </div>
-            <div className="w-36 shrink-0 px-3">
-              <ScoreBar score={parseFloat(String(r.avg_risk_score))} />
-            </div>
-            <div className="w-32 shrink-0 px-3 text-right text-xs text-muted">
-              {fmtAmount(r.total_amount)}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   )
