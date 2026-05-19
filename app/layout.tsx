@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur-md">
-          <div className="relative mx-auto flex max-w-screen-xl items-center justify-between px-4 py-3">
+          <div className="relative mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2.5">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-white font-bold text-sm">P</span>
               <span className="font-semibold text-white">Prozorro Analytics</span>
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
-        <main className="mx-auto max-w-screen-xl px-4 py-6">
+        <main className="mx-auto max-w-screen-2xl px-4 py-6">
           {children}
         </main>
 
