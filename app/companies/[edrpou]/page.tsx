@@ -217,7 +217,7 @@ export default function CompanyPage({ params }: Props) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-border">
+      <div className="flex gap-1 border-b border-border overflow-x-auto scrollbar-none">
         {TABS.map(t => (
           <button
             key={t.key}

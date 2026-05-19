@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import AuthNav from '@/components/AuthNav'
+import MobileNav from '@/components/MobileNav'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -29,12 +30,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur-md">
-          <div className="mx-auto flex max-w-screen-xl items-center justify-between px-4 py-3">
+          <div className="relative mx-auto flex max-w-screen-xl items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2.5">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-white font-bold text-sm">P</span>
               <span className="font-semibold text-white">Prozorro Analytics</span>
             </Link>
-            <nav className="flex items-center gap-1">
+
+            {/* Desktop nav — hidden on mobile */}
+            <nav className="hidden sm:flex items-center gap-1">
               <NavLink href="/tenders">Тендери</NavLink>
               <NavLink href="/companies">Компанії</NavLink>
               <NavLink href="/analytics">Аналітика</NavLink>
@@ -45,7 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <NavLink href="/alerts">Сповіщення</NavLink>
               <NavLink href="/api-keys">API</NavLink>
             </nav>
-            <AuthNav />
+
+            <div className="flex items-center gap-2">
+              <AuthNav />
+              {/* Hamburger — visible only on mobile */}
+              <MobileNav />
+            </div>
           </div>
         </header>
 

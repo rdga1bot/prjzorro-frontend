@@ -23,3 +23,16 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Hide scrollbar but keep scrollability (mobile tab bars) */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Smooth momentum scroll on iOS */
+.overflow-x-auto { -webkit-overflow-scrolling: touch; }
+
+/* Prevent pull-to-refresh on fixed header */
+html { overscroll-behavior-y: none; }

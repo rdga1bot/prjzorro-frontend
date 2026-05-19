@@ -123,24 +123,24 @@ function TendersPageContent() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-bold text-white">Тендери</h1>
-        <div className="flex items-center gap-3">
-          {data && <span className="text-sm text-muted">{data.total.toLocaleString('uk-UA')} знайдено</span>}
+        <div className="flex items-center gap-2">
+          {data && <span className="text-sm text-muted hidden sm:inline">{data.total.toLocaleString('uk-UA')} знайдено</span>}
           <div className="flex gap-1">
             <a
               href={exportUrl('csv', filters)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted hover:text-white hover:border-accent transition-colors"
               title="Завантажити CSV (до 50 000 рядків)"
             >
-              <Download size={13} /> CSV
+              <Download size={13} /> <span className="hidden sm:inline">CSV</span>
             </a>
             <a
               href={exportUrl('xlsx', filters)}
               className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-muted hover:text-white hover:border-accent transition-colors"
               title="Завантажити XLSX (до 50 000 рядків)"
             >
-              <Download size={13} /> XLSX
+              <Download size={13} /> <span className="hidden sm:inline">XLSX</span>
             </a>
           </div>
         </div>

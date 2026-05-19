@@ -98,31 +98,33 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Тендер</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-muted w-36">Сума</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-muted w-28">Ризик</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-muted w-28">Дата</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentTenders.map(t => (
-                <tr key={t.id} className="border-t border-border hover:bg-white/5 transition-colors">
-                  <td className="px-4 py-3">
-                    <Link href={`/tenders/${t.tender_id}`}>
-                      <p className="text-white hover:text-accent line-clamp-2">{t.title}</p>
-                      <p className="text-xs text-muted mt-0.5">{t.procuring_entity_name}</p>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-sm">{fmtAmount(t.value_amount)}</td>
-                  <td className="px-4 py-3"><RiskBadge level={t.risk_level} size="sm" /></td>
-                  <td className="px-4 py-3 text-xs text-muted">{fmtDate(t.date_created)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[480px]">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Тендер</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted w-36 hidden sm:table-cell">Сума</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted w-28">Ризик</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted w-28 hidden sm:table-cell">Дата</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentTenders.map(t => (
+                  <tr key={t.id} className="border-t border-border hover:bg-white/5 transition-colors">
+                    <td className="px-4 py-3">
+                      <Link href={`/tenders/${t.tender_id}`}>
+                        <p className="text-white hover:text-accent line-clamp-2">{t.title}</p>
+                        <p className="text-xs text-muted mt-0.5">{t.procuring_entity_name}</p>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-sm hidden sm:table-cell">{fmtAmount(t.value_amount)}</td>
+                    <td className="px-4 py-3"><RiskBadge level={t.risk_level} size="sm" /></td>
+                    <td className="px-4 py-3 text-xs text-muted hidden sm:table-cell">{fmtDate(t.date_created)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </div>
