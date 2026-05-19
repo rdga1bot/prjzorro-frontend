@@ -46,7 +46,7 @@ export default function TrendSection() {
       textStyle: { color: '#64748b' },
       right: 10,
     },
-    grid: { left: 10, right: 70, bottom: 0, top: 30, containLabel: true },
+    grid: { left: 10, right: 55, bottom: 0, top: 30, containLabel: true },
     xAxis: {
       type: 'category',
       data: rows.map(r => r.date.slice(5)),
@@ -90,7 +90,7 @@ export default function TrendSection() {
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       {/* Header + controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-white">Тренд</h3>
           {data && (
@@ -104,24 +104,22 @@ export default function TrendSection() {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {/* Region filter */}
-          <form onSubmit={e => { e.preventDefault(); setRegion(regionInput.trim()) }}
-                className="flex gap-1">
+        {/* Controls — wrap to next line on narrow screens */}
+        <div className="flex flex-wrap items-center gap-2">
+          <form onSubmit={e => { e.preventDefault(); setRegion(regionInput.trim()) }}>
             <input
               value={regionInput}
               onChange={e => { setRegionInput(e.target.value); if (!e.target.value) setRegion('') }}
               placeholder="Регіон..."
-              className="w-28 rounded-lg border border-border bg-bg px-2 py-1 text-xs text-white focus:border-accent outline-none placeholder:text-muted"
+              className="w-24 rounded-lg border border-border bg-bg px-2 py-1 text-xs text-white focus:border-accent outline-none placeholder:text-muted"
             />
           </form>
-          {/* Days selector */}
           <div className="flex rounded-lg border border-border overflow-hidden">
             {DAY_OPTIONS.map(o => (
               <button
                 key={o.value}
                 onClick={() => setDays(o.value)}
-                className={`px-2.5 py-1 text-xs transition-colors
+                className={`px-2 py-1 text-xs transition-colors
                   ${days === o.value
                     ? 'bg-accent text-white'
                     : 'text-muted hover:text-white hover:bg-white/5'}`}
