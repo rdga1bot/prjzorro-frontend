@@ -168,37 +168,41 @@ function TenderTable({
       {/* Пагінація */}
       {pages > 1 && (
         <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm">
-          <span className="text-muted">
-            {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)} з {total}
+          <span className="text-muted text-xs sm:text-sm">
+            {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)} з {total.toLocaleString('uk-UA')}
           </span>
           <div className="flex gap-1">
             <button
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              className="rounded px-3 py-1.5 text-muted hover:bg-white/10 disabled:opacity-30"
+              className="rounded px-2.5 py-1.5 text-muted hover:bg-white/10 disabled:opacity-30"
             >
               ←
             </button>
-            {Array.from({ length: Math.min(pages, 7) }, (_, i) => {
-              const p = page <= 4 ? i + 1
-                : page >= pages - 3 ? pages - 6 + i
-                : page - 3 + i
-              return p > 0 && p <= pages ? (
-                <button
-                  key={p}
-                  onClick={() => onPageChange(p)}
-                  className={`rounded px-3 py-1.5 ${p === page
-                    ? 'bg-accent text-white'
-                    : 'text-muted hover:bg-white/10'}`}
-                >
-                  {p}
-                </button>
-              ) : null
-            })}
+            {/* Mobile: 3 buttons (prev, current, next range); Desktop: 7 buttons */}
+            {Array.from({ length: pages }, (_, i) => i + 1).filter(p => {
+              const mobileRange = [page - 1, page, page + 1].filter(x => x > 0 && x <= pages)
+              const desktopStart = page <= 4 ? 1
+                : page >= pages - 3 ? pages - 6
+                : page - 3
+              const desktopRange = Array.from({ length: Math.min(pages, 7) }, (_, i) => desktopStart + i)
+                .filter(x => x > 0 && x <= pages)
+              return desktopRange.includes(p)
+            }).map(p => (
+              <button
+                key={p}
+                onClick={() => onPageChange(p)}
+                className={`rounded px-2.5 py-1.5 text-sm transition-colors
+                  ${p === page ? 'bg-accent text-white' : 'text-muted hover:bg-white/10'}
+                  ${Math.abs(p - page) > 1 ? 'hidden sm:block' : ''}`}
+              >
+                {p}
+              </button>
+            ))}
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page >= pages}
-              className="rounded px-3 py-1.5 text-muted hover:bg-white/10 disabled:opacity-30"
+              className="rounded px-2.5 py-1.5 text-muted hover:bg-white/10 disabled:opacity-30"
             >
               →
             </button>
